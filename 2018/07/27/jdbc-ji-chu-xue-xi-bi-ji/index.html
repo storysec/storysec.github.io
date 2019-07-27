@@ -141,13 +141,13 @@
     <section class="markdown-content"><h2 id="第一课"><a href="#第一课" class="headerlink" title="第一课"></a>第一课</h2><h3 id="第一节：JDBC简介"><a href="#第一节：JDBC简介" class="headerlink" title="第一节：JDBC简介"></a>第一节：JDBC简介</h3><p><code>JDBC</code>(<code>Java Data Base Connectivity</code>，<code>Java</code>数据库连接) 是一种用于执行<code>SQL</code>语句的<code>JavaAPI</code>，可以为多种关系数据库提供统一访问，它由一组用<code>Java</code>语言编写的类和接口组成。<code>JDBC</code>提供了一种基准，据此可以构建更高级的工具和接口，使数据库开发人员能够编写数据库应用程序。</p>
 <h3 id="第二节：JDBC原理"><a href="#第二节：JDBC原理" class="headerlink" title="第二节：JDBC原理"></a>第二节：JDBC原理</h3><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g0njtf16trj30kj09rdgc.jpg" alt></p>
 <p><code>JDBC</code>原理:<code>JDBC</code>是以前<code>SUN</code>公司定义的一套访问数据库的接口（没有具体实现），一套标准，具体的实现是由各大数据库厂家去实现，每个数据库厂家都有自己的<code>JDBC</code>实现，也就是<code>JDBC</code>驱动实现类，<code>Java</code>应用程序连接指定数据库，需要使用厂家提供的<code>JDBC</code>驱动才能连接。（这里其实就是<code>java</code>多态的一种体现，一个接口可以有很多具体的实现）</p>
-<h2 id="第二课"><a href="#第二课" class="headerlink" title="第二课"></a>第二课</h2><h3 id="第一节：JDBC连接数据库步骤"><a href="#第一节：JDBC连接数据库步骤" class="headerlink" title="第一节：JDBC连接数据库步骤"></a>第一节：JDBC连接数据库步骤</h3><pre><code>第一步：加载驱动
-
-第二步：链接数据库
-
-第三步：使用语句操作数据库
-
-第四步：关闭数据库链接，释放资源；</code></pre><h3 id="第二节：在项目里配置数据库驱动"><a href="#第二节：在项目里配置数据库驱动" class="headerlink" title="第二节：在项目里配置数据库驱动"></a>第二节：在项目里配置数据库驱动</h3><pre><code>右击项目-&gt;Build Path -&gt; Configure Build Path -&gt; Add External JARs</code></pre><h3 id="第三节：加载数据库驱动"><a href="#第三节：加载数据库驱动" class="headerlink" title="第三节：加载数据库驱动"></a>第三节：加载数据库驱动</h3><p><code>MySQL</code>驱动名：<code>com.mysql.jdbc.Driver</code></p>
+<h2 id="第二课"><a href="#第二课" class="headerlink" title="第二课"></a>第二课</h2><h3 id="第一节：JDBC连接数据库步骤"><a href="#第一节：JDBC连接数据库步骤" class="headerlink" title="第一节：JDBC连接数据库步骤"></a>第一节：JDBC连接数据库步骤</h3><blockquote>
+<p>第一步：加载驱动</p>
+<p>第二步：链接数据库</p>
+<p>第三步：使用语句操作数据库</p>
+<p>第四步：关闭数据库链接，释放资源；</p>
+</blockquote>
+<h3 id="第二节：在项目里配置数据库驱动"><a href="#第二节：在项目里配置数据库驱动" class="headerlink" title="第二节：在项目里配置数据库驱动"></a>第二节：在项目里配置数据库驱动</h3><pre><code>右击项目-&gt;Build Path -&gt; Configure Build Path -&gt; Add External JARs</code></pre><h3 id="第三节：加载数据库驱动"><a href="#第三节：加载数据库驱动" class="headerlink" title="第三节：加载数据库驱动"></a>第三节：加载数据库驱动</h3><p><code>MySQL</code>驱动名：<code>com.mysql.jdbc.Driver</code></p>
 <p>加载方式：<code>Class.forName</code>(驱动名)</p>
 <h3 id="第四节：连接及关闭数据库"><a href="#第四节：连接及关闭数据库" class="headerlink" title="第四节：连接及关闭数据库"></a>第四节：连接及关闭数据库</h3><ul>
 <li>1.DriverManager驱动管理类，主要负责获取一个数据库的连接；</li>
@@ -200,9 +200,10 @@
         <span class="token punctuation">}</span>
     <span class="token punctuation">}</span>
 <span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<h2 id="第三课"><a href="#第三课" class="headerlink" title="第三课"></a>第三课</h2><pre><code>ctrl + shift + f :格式化
-ctrl + shift + / :多行用*号注释
-alt + shift + s :调用方法</code></pre><h3 id="第一节：Statement接口引入"><a href="#第一节：Statement接口引入" class="headerlink" title="第一节：Statement接口引入"></a>第一节：Statement接口引入</h3><p>作用：用于执行静态<code>SQL</code>语句并返回它所生成结果的对象。</p>
+<h2 id="第三课"><a href="#第三课" class="headerlink" title="第三课"></a>第三课</h2><blockquote>
+<p>ctrl + shift + f :格式化<br>ctrl + shift + / :多行用*号注释<br>alt + shift + s :调用方法</p>
+</blockquote>
+<h3 id="第一节：Statement接口引入"><a href="#第一节：Statement接口引入" class="headerlink" title="第一节：Statement接口引入"></a>第一节：Statement接口引入</h3><p>作用：用于执行静态<code>SQL</code>语句并返回它所生成结果的对象。</p>
 <p><code>int executeUpdate(String sql)</code>执行给定<code>SQL</code>语句，该语句可能为<code>INSERT</code>、<code>UPDATE</code>或<code>DELETE</code>语句，或者不返回任何内容的<code>SQL</code>语句（如<code>SQL DDL</code>语句）。</p>
 <p><code>void close()</code>立即释放此<code>Statement</code>对象的数据库和<code>JDBC</code>资源，而不是等待该对象自动关闭时发生此操作。</p>
 <p><code>DbUtil</code>类的实现：</p>
@@ -1028,9 +1029,9 @@ dbUtil<span class="token punctuation">.</span><span class="token function">close
       </a>
     
     
-      <a class="nav-right" href="/2019/07/28/vmware-xu-ni-ji-san-chong-wang-luo-lian-jie-mo-shi-xiang-jie/">
+      <a class="nav-right" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-yi-pian/">
         
-          VMware虚拟机三种网络连接模式详解
+          代码审计的艺术系列 第一篇
         
         <span class="nav-arrow"> →</span>
       </a>

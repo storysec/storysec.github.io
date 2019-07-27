@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+  <head><meta name="generator" content="Hexo 3.9.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="关注网络安全">
+  <meta name="keyword" content="web安全 代码审计">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      影风博客
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+<link rel="stylesheet" href="/css/prism-story.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png">
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>影风博客</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link active">主页</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">标签</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">归档</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">关于</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link mobile-active">主页</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">标签</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">归档</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">关于</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <main class="app-body">
+  
+    <article class="article-card">
+      <h2 class="article-head">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-si-pian/">代码审计的艺术系列 第四篇</a>
+      </h2>
+      <p class="article-date">2019年3月23日</p>
+      
+        
+  <a href="/tags#代码审计" >
+    <span class="tag-code">代码审计</span>
+  </a>
+
+      
+      <div class="article-summary">
+        
+          0x01 前言接白帽子分享之代码审计的艺术系列 第二篇和第三篇，这里讲宽字符注入漏洞产生的原因和案例分析。（没看过前三篇的同学，可以先看看前三篇）
+首先我们了解下宽字节注入，宽字节注入源于程序员设置MySQL连接时错误配置为：set character_set_client=gbk，这样配置 ...
+        
+      </div>
+      <a class="more" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-si-pian/">Read more</a>
+    </article>
+  
+    <article class="article-card">
+      <h2 class="article-head">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-san-pian/">代码审计的艺术系列 第三篇</a>
+      </h2>
+      <p class="article-date">2019年3月23日</p>
+      
+        
+  <a href="/tags#代码审计" >
+    <span class="tag-code">代码审计</span>
+  </a>
+
+      
+      <div class="article-summary">
+        
+          0x01 前言接白帽子分享之代码审计的艺术系列 第二篇，这里讲一些函数的错误使用会引发SQL注入的场景以及二次注入漏洞产生的原因。如果没看之前的内容，建议先看看前两篇。
+0x02 准备知识储备：php基础、MySQL入门
+工具：notepad++
+服务器环境：wamp
+测试代码:见文中
+0x ...
+        
+      </div>
+      <a class="more" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-san-pian/">Read more</a>
+    </article>
+  
+    <article class="article-card">
+      <h2 class="article-head">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-er-pian/">代码审计的艺术系列 第二篇</a>
+      </h2>
+      <p class="article-date">2019年3月23日</p>
+      
+        
+  <a href="/tags#代码审计" >
+    <span class="tag-code">代码审计</span>
+  </a>
+
+      
+      <div class="article-summary">
+        
+          0x01 前言现在的WEB程序基本都有对SQL注入的全局过滤，运维人员配置PHP环境是一般会开启魔术引号GPC，即magic_quotes_gpc=On的情况下，如果输入的数据有单引号’、双引号”、反斜线\与 NUL（NULL字符）等字符都会被加上反斜线进行转义处理。不过GPC在PHP5.4 ...
+        
+      </div>
+      <a class="more" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-er-pian/">Read more</a>
+    </article>
+  
+    <article class="article-card">
+      <h2 class="article-head">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-yi-pian/">代码审计的艺术系列 第一篇</a>
+      </h2>
+      <p class="article-date">2019年3月23日</p>
+      
+        
+  <a href="/tags#代码审计" >
+    <span class="tag-code">代码审计</span>
+  </a>
+
+      
+      <div class="article-summary">
+        
+          0x01 前言近几年随着web安全人才的升级，越来越多的安全研究人员投入到php应用的漏洞挖掘，相应的代码安全问题也被大量的披露出来。身处这个时代，我有幸见识到身边白帽子不断寻求突破并丰富和完善了代码审计这个概念，时至今日笔者总结了一套基础的审计方法，厚着脸皮取名为代码审计的艺术，希望能够帮 ...
+        
+      </div>
+      <a class="more" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-yi-pian/">Read more</a>
+    </article>
+  
+    <article class="article-card">
+      <h2 class="article-head">
+        <a href="/2018/07/27/jdbc-ji-chu-xue-xi-bi-ji/">JDBC基础学习笔记</a>
+      </h2>
+      <p class="article-date">2018年7月27日</p>
+      
+        
+  <a href="/tags#Java" >
+    <span class="tag-code">Java</span>
+  </a>
+
+  <a href="/tags#JSP" >
+    <span class="tag-code">JSP</span>
+  </a>
+
+  <a href="/tags#编程基础" >
+    <span class="tag-code">编程基础</span>
+  </a>
+
+      
+      <div class="article-summary">
+        
+          第一课第一节：JDBC简介JDBC(Java Data Base Connectivity，Java数据库连接) 是一种用于执行SQL语句的JavaAPI，可以为多种关系数据库提供统一访问，它由一组用Java语言编写的类和接口组成。JDBC提供了一种基准，据此可以构建更高级的工具和接口，使数 ...
+        
+      </div>
+      <a class="more" href="/2018/07/27/jdbc-ji-chu-xue-xi-bi-ji/">Read more</a>
+    </article>
+  
+    <article class="article-card">
+      <h2 class="article-head">
+        <a href="/2017/08/03/shi-yong-c-he-c-shi-xian-fu-shu-chou-xiang-shu-ju-lei-xing-complex/">使用CC++实现复数抽象数据类型Complex</a>
+      </h2>
+      <p class="article-date">2017年8月3日</p>
+      
+        
+  <a href="/tags#数据结构" >
+    <span class="tag-code">数据结构</span>
+  </a>
+
+      
+      <div class="article-summary">
+        
+          最近才开始学习数据结构，对很多问题的认识不够深入，本文主要举一个用数据结构求解问题的过程实例，来加强深入认识。
+先介绍一下抽象数据类型：抽象数据类型（ADT）：指的是从求解问题的数学模型中抽象出来的数据结构和运算（抽象运算），而不考虑计算机的具体实现。
+抽象数据类型=逻辑结构+抽象运算
+例如 ...
+        
+      </div>
+      <a class="more" href="/2017/08/03/shi-yong-c-he-c-shi-xian-fu-shu-chou-xiang-shu-ju-lei-xing-complex/">Read more</a>
+    </article>
+  
+    <article class="article-card">
+      <h2 class="article-head">
+        <a href="/2017/08/02/chong-xin-kai-shi-zuo-hui-zi-ji/">重新开始，做回自己</a>
+      </h2>
+      <p class="article-date">2017年8月2日</p>
+      
+        
+  <a href="/tags#博客生涯" >
+    <span class="tag-code">博客生涯</span>
+  </a>
+
+      
+      <div class="article-summary">
+        
+          小站一直生长在阿里云，前段时间老是被阿里云盯上，一言不合就封我URL，简直惨不忍睹。
+Blog道路上总是充满曲折的，成功贵在坚持，放弃等于失败。
+无论怎么样，blog还是要一直做下去，写写自己的技术笔记和经历，或者人生感悟，更重要的是结交更多的朋友。
+之前的一段日子里，在忙一些杂乱无章的事， ...
+        
+      </div>
+      <a class="more" href="/2017/08/02/chong-xin-kai-shi-zuo-hui-zi-ji/">Read more</a>
+    </article>
+  
+
+  
+    <div class="guide-pager">
+  
+    <a href="/"><span class="page-arrow">← </span>Prev</a>
+  
+  
+    <a class="unvisible" href="/">Next <span class="page-arrow">→</span></a>
+  
+</div>
+  
+</main>
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng">yanm1ng</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>

@@ -142,25 +142,13 @@
 <h2 id="先介绍一下抽象数据类型："><a href="#先介绍一下抽象数据类型：" class="headerlink" title="先介绍一下抽象数据类型："></a>先介绍一下抽象数据类型：</h2><p>抽象数据类型（<code>ADT</code>）：指的是从求解问题的数学模型中抽象出来的数据结构和运算（抽象运算），而不考虑计算机的具体实现。</p>
 <p><strong>抽象数据类型=逻辑结构+抽象运算</strong></p>
 <p>例如，定义复数抽象数据类型<code>Complex</code>，一个复数的形式:<code>e1+e2</code>或<code>(e1,e2)</code></p>
-<pre><code>ADT Complex{
-
-数据对象：
-D={e1,e2|e1,e2均为实数}
-
-数据关系：
-R={&lt;e1,e2&gt;|e1是复数的实部,e2是复数的虚部}
-
-基本运算：
-AssignComplex(&amp;z,v1,v2):构造复数z。
-DestroyComplex(&amp;z):复数z被销毁。
-GetReal(z,&amp;real):返回复数z的虚部值。
-GetImag(z,&amp;Imag):返回复数z的虚部值。
-Add(z1,z2,&amp;sum):返回两个复数z1、z2的和。
-Sub(z1,z2,&amp;sum):返回两个复数z1、z2的差。
-Mul(z1,z2,&amp;sum):返回两个复数z1、z2的积。
-Div(z1,z2,&amp;sum):返回两个复数z1、z2的商。
-
-}ADT Complex</code></pre><h2 id="下面是给出的参考程序："><a href="#下面是给出的参考程序：" class="headerlink" title="下面是给出的参考程序："></a>下面是给出的参考程序：</h2><pre class="line-numbers language-c"><code class="language-c"><span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<blockquote>
+<p>ADT Complex{<br>数据对象：<br>D={e1,e2|e1,e2均为实数}</p>
+<p>数据关系：<br>R={&lt;e1,e2&gt;|e1是复数的实部,e2是复数的虚部}</p>
+<p>基本运算：<br>AssignComplex(&amp;z,v1,v2):构造复数z。<br>DestroyComplex(&amp;z):复数z被销毁。<br>GetReal(z,&amp;real):返回复数z的虚部值。<br>GetImag(z,&amp;Imag):返回复数z的虚部值。<br>Add(z1,z2,&amp;sum):返回两个复数z1、z2的和。<br>Sub(z1,z2,&amp;sum):返回两个复数z1、z2的差。<br>Mul(z1,z2,&amp;sum):返回两个复数z1、z2的积。<br>Div(z1,z2,&amp;sum):返回两个复数z1、z2的商。</p>
+<p>}ADT Complex</p>
+</blockquote>
+<h2 id="下面是给出的参考程序："><a href="#下面是给出的参考程序：" class="headerlink" title="下面是给出的参考程序："></a>下面是给出的参考程序：</h2><pre class="line-numbers language-c"><code class="language-c"><span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
 <span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{</span> <span class="token keyword">double</span> e1<span class="token punctuation">;</span> <span class="token keyword">double</span> e2<span class="token punctuation">;</span> <span class="token punctuation">}</span>
 Complex<span class="token punctuation">;</span> <span class="token keyword">void</span> <span class="token function">AssignComplex</span><span class="token punctuation">(</span>Complex <span class="token operator">&amp;</span>z<span class="token punctuation">,</span><span class="token keyword">double</span> v1<span class="token punctuation">,</span><span class="token keyword">double</span> v2<span class="token punctuation">)</span> <span class="token comment" spellcheck="true">//构造复数Z</span>
 <span class="token punctuation">{</span>
@@ -256,7 +244,6 @@ Complex c1<span class="token punctuation">,</span>c2<span class="token punctuati
     <span class="token function">GetImag</span><span class="token punctuation">(</span>c3<span class="token punctuation">,</span>d<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"，c3的虚部为：%g\n"</span><span class="token punctuation">,</span>d<span class="token punctuation">)</span><span class="token punctuation">;</span> 
     <span class="token function">DestroyComplex</span><span class="token punctuation">(</span>c3<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"复数已被销毁！\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
 <span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p><a href="http://www.storysec.com/abstract-datatype-complex.html" target="_blank" rel="noopener">http://www.storysec.com/abstract-datatype-complex.html</a></p>
 </section>
     <!-- Tags START -->
     
