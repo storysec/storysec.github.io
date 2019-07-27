@@ -10,7 +10,7 @@
   
   <title>
     
-      测试文章 | 影风博客
+      影风博客
     
   </title>
   <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -128,7 +128,7 @@
 </header>
 
     <div id="article-banner">
-  <h2>测试文章</h2>
+  <h2></h2>
   <p class="post-date">2019-07-27</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
@@ -137,9 +137,31 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><h1 id="一级标题"><a href="#一级标题" class="headerlink" title="一级标题"></a>一级标题</h1><h2 id="typora快捷键"><a href="#typora快捷键" class="headerlink" title="typora快捷键"></a>typora快捷键</h2><p>ctrl+4, 就是四级标题，ctrl+0 是段落，总共0–5，有6个<br>ctrl+T， 插入表格<br>ctrl+B，粗体， ctrl+I， 斜体</p>
-<p>ctrl+U，下划线<br>ctrl+K，插入链接<br>ctrl+shift+I，插入图片。<br>ctrl+shift+K，插入多行代码，代码块。<br>ctrl+shift+Q，单行引言<br>ctrl+\ , 清除格式<br>ctrl+shift+=，放大字体 （ 这里的快捷键，和ubuntu终端窗口的放大缩小是一样的）<br>ctrl+shift+ -，缩小字体</p>
-<p>作者：fanchuang<br>链接：<a href="https://www.jianshu.com/p/9293708e0fcc" target="_blank" rel="noopener">https://www.jianshu.com/p/9293708e0fcc</a><br>来源：简书<br>简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。</p>
+    <section class="markdown-content"><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言:"></a>0x00 前言:</h2><p>本篇介绍的是任意文件下载和删除也是审计必备的技能之一，主要分为危险函数、文件下载和文件删除三方面展开。</p>
+<h2 id="0x01-危险函数："><a href="#0x01-危险函数：" class="headerlink" title="0x01 危险函数："></a>0x01 危险函数：</h2><p>文件下载危险函数：<code>file_get_contents()</code>、<code>fopen()</code>等</p>
+<p>文件删除危险函数：<code>unlink()</code></p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19dyqsabaj30ja0890u8.jpg" alt></p>
+<h2 id="0x02-文件下载："><a href="#0x02-文件下载：" class="headerlink" title="0x02 文件下载："></a>0x02 文件下载：</h2><p>文件下载漏洞通常出现在像<code>download.php</code>、<code>file.php</code>类似这种名字的程序里。精准的搜索方法还是搜<code>file_get_contents()</code>、<code>fopen()</code>等函数，之前某<code>oa</code>系统就存在使用<code>file_get_contents()</code>这个函数导致的文件下载漏洞，</p>
+<p>其缺陷代码如下:</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$fileurl=$_REQUEST[<span class="string">'url'</span>];</span><br><span class="line"><span class="comment">//判断文件是否存在逻辑</span></span><br><span class="line">$content=file_get_contents($fileurl);</span><br><span class="line"><span class="keyword">echo</span> $content;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>测试发现成功读取了文件内容：</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19dzzw36gj30k001tweo.jpg" alt></p>
+<p>使用<code>fopen()</code>函数不当也容易出现这种漏洞，之前出现过的漏洞代码如下：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$filename=$_GET[<span class="string">'name'</span>];</span><br><span class="line">$filename_AND_path= <span class="string">'D:\\phpStudy\\PHPTutorial\\WWW\\'</span>.$filename;</span><br><span class="line">$file=fopen($filename_AND_path,<span class="string">"r"</span>);</span><br><span class="line"><span class="keyword">if</span> (!$file) &#123;</span><br><span class="line">    <span class="keyword">exit</span>(<span class="string">"file not found"</span>);</span><br><span class="line">&#125;</span><br><span class="line">header(<span class="string">"Content-Type: application/octet-stream"</span>);</span><br><span class="line">header(<span class="string">"Access-Ranges:bytes"</span>);</span><br><span class="line">header(<span class="string">"Access-Length:"</span>.filesize($filename_AND_path));</span><br><span class="line">header(<span class="string">"Content-Disposition:attachment;filename=$filename"</span>);</span><br><span class="line"><span class="keyword">echo</span> fread($file,filesize($filename_AND_path));</span><br><span class="line">fclose($file);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>尝试发现可以继续下载任意文件了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost/filedown.php?name=phpinfo.php</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19e0d1t7hj30k002pjrr.jpg" alt></p>
+<p>当然文件下载相关的函数不止这两个，还请自行搜寻和积累~</p>
+<h2 id="0x03-文件删除："><a href="#0x03-文件删除：" class="headerlink" title="0x03 文件删除："></a>0x03 文件删除：</h2><p>程序员在码代码使用了<code>unlink()</code>等函数之前未对传入的文件名或路径做有效的校验，从而被黑客利用删除任意文件造成损失。之前某知名的<code>Mail</code>系统就存在这一漏洞，缺陷代码如下：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$fileUrl=<span class="keyword">isset</span>($_GET[<span class="string">'fileUrl'</span>])?$_GET[<span class="string">'fileUrl'</span>]:<span class="string">'../uploads/text1.txt'</span>;</span><br><span class="line"><span class="keyword">if</span>(file_exists($fileUrl))&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"1"</span>;</span><br><span class="line">&#125;<span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">echo</span> $fileUrl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> ($fileUrl <span class="keyword">and</span> is_file($fileUrl)) &#123;</span><br><span class="line">    @unlink($fileUrl);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>本地测试发现返回为<code>1</code>，证明删除了<code>db.sql</code>文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost/deleteFile.php?fileUrl=db.sql</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19e0nud81j30k001a747.jpg" alt></p>
 </section>
     <!-- Tags START -->
     
@@ -149,15 +171,15 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/2019/07/27/hello-world/">
+      <a class="nav-left" href="/2019/07/27/代码审计的艺术系列 - 第三篇/">
         <span class="nav-arrow">← </span>
         
-          Hello World
+          (untitled)
         
       </a>
     
     
-      <a class="nav-right" href="/2019/07/27/代码审计之create_function函数/">
+      <a class="nav-right" href="/2019/07/27/代码审计的艺术系列 - 第四篇/">
         
           (untitled)
         
@@ -206,7 +228,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#一级标题"><span class="toc-nav-text">一级标题</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#typora快捷键"><span class="toc-nav-text">typora快捷键</span></a></li></ol></li></ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x00-前言"><span class="toc-nav-text">0x00 前言:</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x01-危险函数："><span class="toc-nav-text">0x01 危险函数：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x02-文件下载："><span class="toc-nav-text">0x02 文件下载：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x03-文件删除："><span class="toc-nav-text">0x03 文件删除：</span></a></li></ol>
     
   </div>
 </aside>
@@ -216,7 +238,7 @@
 
 <script>
   (function () {
-    var url = 'https://storysec.github.io/2019/07/27/测试文章/';
+    var url = 'https://storysec.github.io/2019/07/27/代码审计的艺术系列 - 第十篇 文件下载和删除/';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({

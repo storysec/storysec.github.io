@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+  <head><meta name="generator" content="Hexo 3.9.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="关注网络安全">
+  <meta name="keyword" content="web安全 代码审计">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      影风博客
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+</head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png">
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>影风博客</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">主页</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">所有文章</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">标签</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">关于</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">主页</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">所有文章</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">标签</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">关于</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2></h2>
+  <p class="post-date">2019-07-27</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>设计缺陷和逻辑相关的漏洞是目前漏洞挖掘者比较关注的。</p>
+<p>最近在国外漏洞披露平台<code>hackerone</code>上就有位白帽子挖掘到了<code>Uber</code>的一个修改任意账户密码的逻辑漏洞获得了<code>$10000</code>的丰厚奖励。</p>
+<p>所以如何在源码中找逻辑漏洞是安全和开发人员必须熟悉的技能，主要总结了安装问题、找回密码这两篇内容，本篇讲的是代码审计中的安装问题。</p>
+<h2 id="0x01-设计缺陷-amp-amp-逻辑漏洞挖掘的脑图："><a href="#0x01-设计缺陷-amp-amp-逻辑漏洞挖掘的脑图：" class="headerlink" title="0x01 设计缺陷&amp;&amp;逻辑漏洞挖掘的脑图："></a>0x01 设计缺陷&amp;&amp;逻辑漏洞挖掘的脑图：</h2><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19k3vreomj30qr0f7q6b.jpg" alt></p>
+<h2 id="0x02-无任何验证-："><a href="#0x02-无任何验证-：" class="headerlink" title="0x02 无任何验证 ："></a>0x02 无任何验证 ：</h2><p>程序安装完成后不会自动删除安装文件，也不会生成<code>lock</code>来判断是否安装过导致的重装漏洞，之前出现过的漏洞代码如下:</p>
+<p><code>install/index.php</code>:</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">error_reporting(E_ALL ^ E_NOTICE);</span><br><span class="line">date_default_timezone_set(<span class="string">'PRC'</span>);</span><br><span class="line">header(<span class="string">'Content-Type: text/html; charset=utf-8'</span>);</span><br><span class="line"><span class="comment">//改写不安全的register_global和防sql注入处理</span></span><br><span class="line"><span class="keyword">if</span> (@ini_get(<span class="string">'register_globals'</span>)) &#123;</span><br><span class="line">	<span class="keyword">foreach</span>($_REQUEST <span class="keyword">as</span> $name =&gt; $value)&#123;<span class="keyword">unset</span>($$name);&#125;</span><br><span class="line">&#125;</span><br><span class="line">$pe[<span class="string">'host_root'</span>] = <span class="string">'http://'</span>.str_ireplace(rtrim(str_replace(<span class="string">'\\'</span>,<span class="string">'/'</span>,$_SERVER[<span class="string">'DOCUMENT_ROOT'</span>]), <span class="string">'/'</span>), $_SERVER[<span class="string">'HTTP_HOST'</span>], str_replace(<span class="string">'\\'</span>, <span class="string">'/'</span>, dirname(<span class="keyword">__FILE__</span>))).<span class="string">'/../'</span>;</span><br><span class="line">$pe[<span class="string">'path_root'</span>] = str_replace(<span class="string">'\\'</span>,<span class="string">'/'</span>,dirname(<span class="keyword">__FILE__</span>)).<span class="string">'/../'</span>;</span><br><span class="line"><span class="keyword">include</span>(<span class="string">"&#123;$pe['path_root']&#125;/include/class/cache.class.php"</span>);</span><br><span class="line"><span class="keyword">include</span>(<span class="string">"&#123;$pe['path_root']&#125;/include/function/global.func.php"</span>);</span><br><span class="line"><span class="keyword">if</span> (get_magic_quotes_gpc()) &#123;</span><br><span class="line">	!<span class="keyword">empty</span>($_GET) &amp;&amp; extract(pe_trim(pe_stripslashes($_GET)), EXTR_PREFIX_ALL, <span class="string">'_g'</span>);</span><br><span class="line">	!<span class="keyword">empty</span>($_POST) &amp;&amp; extract(pe_trim(pe_stripslashes($_POST)), EXTR_PREFIX_ALL, <span class="string">'_p'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">	!<span class="keyword">empty</span>($_GET) &amp;&amp; extract(pe_trim($_GET),EXTR_PREFIX_ALL,<span class="string">'_g'</span>);</span><br><span class="line">	!<span class="keyword">empty</span>($_POST) &amp;&amp; extract(pe_trim($_POST),EXTR_PREFIX_ALL,<span class="string">'_p'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">switch</span> ($_g_step) &#123;</span><br><span class="line">	<span class="comment">//#####################@ 配置信息 @#####################//</span></span><br><span class="line">	<span class="keyword">case</span> <span class="string">'setting'</span>:</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">isset</span>($_p_pesubmit)) &#123;</span><br></pre></td></tr></table></figure>
+
+<p><code>install</code>的引导文件里没有判断<code>lock</code>导致可以直接重装</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19k586obnj30k409w3z6.jpg" alt></p>
+<h2 id="0x03-代码的逻辑问题-："><a href="#0x03-代码的逻辑问题-：" class="headerlink" title="0x03 代码的逻辑问题 ："></a>0x03 代码的逻辑问题 ：</h2><h3 id="1-Step1判断lock文件可直接Step2绕过"><a href="#1-Step1判断lock文件可直接Step2绕过" class="headerlink" title="1.Step1判断lock文件可直接Step2绕过"></a>1.Step1判断lock文件可直接Step2绕过</h3><p><code>install/index.php</code>的缺陷代码和分析如下：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">empty</span> ($step))</span><br><span class="line">&#123;</span><br><span class="line">    $step = <span class="number">1</span>;<span class="comment">//当用户没有提交step的时候 赋值为1</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">require_once</span> (<span class="string">"includes/inc_install.php"</span>);</span><br><span class="line">$gototime = <span class="number">2000</span>;</span><br><span class="line"><span class="comment">/*------------------------</span></span><br><span class="line"><span class="comment">显示协议文件</span></span><br><span class="line"><span class="comment">------------------------*/</span></span><br><span class="line"><span class="keyword">if</span> ($step == <span class="number">1</span>) <span class="comment">//当1才检测lock</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (file_exists(<span class="string">'installed.txt'</span>))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">'&lt;html&gt;</span></span><br><span class="line"><span class="string">        &lt;head&gt;</span></span><br><span class="line"><span class="string">        &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;</span></span><br><span class="line"><span class="string">        &lt;/head&gt;</span></span><br><span class="line"><span class="string">        &lt;body&gt;</span></span><br><span class="line"><span class="string">        你已经安装过该系统，如果想重新安装，请先删除install目录下的 installed.txt 文件，然后再安装。</span></span><br><span class="line"><span class="string">        &lt;/body&gt;</span></span><br><span class="line"><span class="string">        &lt;/html&gt;'</span>;</span><br><span class="line">        <span class="keyword">exit</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">include_once</span> (<span class="string">"./templates/s1.html"</span>);</span><br><span class="line">    <span class="keyword">exit</span> ();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*------------------------</span></span><br><span class="line"><span class="comment">测试环境要求</span></span><br><span class="line"><span class="comment">------------------------*/</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="keyword">if</span> ($step == <span class="number">2</span>) <span class="comment">// 我们直接提交step为2 就不check lock了</span></span><br><span class="line">    &#123; </span><br><span class="line">        $phpv = @ phpversion();</span><br><span class="line">        $sp_os = $_ENV[<span class="string">"OS"</span>];</span><br><span class="line">        $sp_gd = @ gdversion();</span><br><span class="line">        $sp_server = $_SERVER[<span class="string">"SERVER_SOFTWARE"</span>];</span><br><span class="line">        $sp_host = (<span class="keyword">empty</span> ($_SERVER[<span class="string">"SERVER_ADDR"</span>]) ? $_SERVER[<span class="string">"SERVER_HOST"</span>] : $_SERVER[<span class="string">"SERVER_ADDR"</span>]);</span><br><span class="line">        $sp_name = $_SERVER[<span class="string">"SERVER_NAME"</span>];</span><br><span class="line">        $sp_max_execution_time = ini_get(<span class="string">'max_execution_time'</span>);</span><br><span class="line">        $sp_allow_reference = (ini_get(<span class="string">'allow_call_time_pass_reference'</span>) ? <span class="string">'&lt;font color=green&gt;[√]On&lt;/font&gt;'</span> : <span class="string">'&lt;font color=red&gt;[×]Off&lt;/font&gt;'</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-判断lock文件的代码有问题"><a href="#2-判断lock文件的代码有问题" class="headerlink" title="2.判断lock文件的代码有问题"></a>2.判断lock文件的代码有问题</h3><p>还有一种是在判断<code>lock</code>文件是否存在的代码上有问题了，我们看下缺陷代码：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">$lockfile=ROOT.<span class="string">'/install.lock'</span>;</span><br><span class="line">$pattern_db= <span class="string">'/[0-9a-zA-Z]*$/'</span>;</span><br><span class="line"><span class="keyword">if</span> (!preg_match($pattern_db,$db_name)||!preg_match($pattern_db,$db_user)) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">'1001'</span>;<span class="keyword">exit</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(file_exists($lockfile) &amp;&amp; ($_a==<span class="string">'template'</span> || $_a==<span class="string">'setting'</span> || $_a==<span class="string">'check'</span>))&#123;</span><br><span class="line">    <span class="keyword">exit</span>(<span class="string">'please delete install.lock'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里判断了<code>Lock</code>是否存在，但是</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(file_exists($lockfile) &amp;&amp; ($_a==<span class="string">'template'</span> || $_a==<span class="string">'setting'</span> || $_a==<span class="string">'check'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这里除了判断<code>lock</code>还判断了<code>$_a</code>，并且使用<code>&amp;&amp;</code>导致<code>$_a</code>为空时就绕过了<code>lock</code>的验证最终导致可继续重装。</p>
+<h2 id="0x04-变量覆盖："><a href="#0x04-变量覆盖：" class="headerlink" title="0x04 变量覆盖："></a>0x04 变量覆盖：</h2><p>在<code>install/index.php</code>中</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">header(<span class="string">"Content-Type: text/html; charset=&#123;$lang&#125;"</span>);</span><br><span class="line"><span class="keyword">foreach</span>(<span class="keyword">Array</span>(<span class="string">'_GET'</span>,<span class="string">'_POST'</span>,<span class="string">'_COOKIE'</span>) <span class="keyword">as</span> $_request)&#123;  </span><br><span class="line">    <span class="keyword">foreach</span>($$_request <span class="keyword">as</span> $_k =&gt; $_v) $&#123;$_k&#125; = _runmagicquotes($_v);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_runmagicquotes</span><span class="params">(&amp;$svar)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!get_magic_quotes_gpc())&#123;</span><br><span class="line">        <span class="keyword">if</span>( is_array($svar) )&#123;</span><br><span class="line">            <span class="keyword">foreach</span>($svar <span class="keyword">as</span> $_k =&gt; $_v) $svar[$_k] = _runmagicquotes($_v);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            $svar = addslashes($svar);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> $svar;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(file_exists($insLockfile))&#123;</span><br><span class="line">    <span class="keyword">exit</span>(<span class="string">" 程序已运行安装，如果你确定要重新安装，请先从FTP中删除 install/install_lock.txt！"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>file_exists($insLockfile)</code>这里判断<code>lock</code>文件是否存在并退出，但是这行代码</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span>($$_request <span class="keyword">as</span> $_k =&gt; $_v) $&#123;$_k&#125; = _runmagicquotes($_v);</span><br></pre></td></tr></table></figure>
+
+<p>存在变量覆盖，所以可以直接将<code>$insLockfile</code>变量覆盖为<code>1</code>就使得<code>file_exists($insLockfile)</code>的返回为<code>0</code>，从而可以继续重装。</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19k6kggfyj30r70640tk.jpg" alt></p>
+<h2 id="0x05-判断lock后无exit"><a href="#0x05-判断lock后无exit" class="headerlink" title="0x05 判断lock后无exit:"></a>0x05 判断lock后无exit:</h2><p>缺陷代码如下：</p>
+<figure class="highlight php"><figcaption><span>&#123;.line-numbers&#125;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Install</span> <span class="keyword">extends</span> <span class="title">Install_Controller</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">function</span> <span class="title">__construct</span> <span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">parent</span>::__construct();</span><br><span class="line">		<span class="keyword">$this</span>-&gt;load-&gt;library(<span class="string">'myclass'</span>);</span><br><span class="line">		$file=FCPATH.<span class="string">'install.lock'</span>;</span><br><span class="line">		<span class="keyword">if</span> (file_exists($file))&#123;</span><br><span class="line">			<span class="keyword">$this</span>-&gt;myclass-&gt;notice(<span class="string">'alert("系统已安装过");window.location.href="'</span>.site_url().<span class="string">'";'</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>检查是否存在<code>install.lock</code>，然后用<code>javascript</code>的方式告诉用户”系统已安装过”，然后跳转。问题在于这个脚本根本还没有使用<code>exit</code>函数来结束，程序会继续运行，导致可继续重装。</p>
+</section>
+    <!-- Tags START -->
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2019/07/27/代码审计的艺术系列－第十二篇/">
+        <span class="nav-arrow">← </span>
+        
+          (untitled)
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/2019/07/27/代码审计的艺术系列－第一篇/">
+        
+          (untitled)
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+      <div class="money-like">
+        <div class="reward-btn">
+          赏
+          <span class="money-code">
+            <span class="alipay-code">
+              <div class="code-image"></div>
+              <b>使用支付宝打赏</b>
+            </span>
+            <span class="wechat-code">
+              <div class="code-image"></div>
+              <b>使用微信打赏</b>
+            </span>
+          </span>
+        </div>
+        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+      </div>
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+      <div class="qrcode">
+        <canvas id="share-qrcode"></canvas>
+        <p class="notice">扫描二维码，分享此文章</p>
+      </div>
+    
+    <!-- 二维码 END -->
+    
+      <!-- No Comment -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x00-前言"><span class="toc-nav-text">0x00 前言</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x01-设计缺陷-amp-amp-逻辑漏洞挖掘的脑图："><span class="toc-nav-text">0x01 设计缺陷&amp;&amp;逻辑漏洞挖掘的脑图：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x02-无任何验证-："><span class="toc-nav-text">0x02 无任何验证 ：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x03-代码的逻辑问题-："><span class="toc-nav-text">0x03 代码的逻辑问题 ：</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#1-Step1判断lock文件可直接Step2绕过"><span class="toc-nav-text">1.Step1判断lock文件可直接Step2绕过</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#2-判断lock文件的代码有问题"><span class="toc-nav-text">2.判断lock文件的代码有问题</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x04-变量覆盖："><span class="toc-nav-text">0x04 变量覆盖：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x05-判断lock后无exit"><span class="toc-nav-text">0x05 判断lock后无exit:</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'https://storysec.github.io/2019/07/27/代码审计的艺术系列－第十一篇/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+  })();
+</script>
+
+
+  <script>
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+  </script>
+
+
+
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng">yanm1ng</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>
