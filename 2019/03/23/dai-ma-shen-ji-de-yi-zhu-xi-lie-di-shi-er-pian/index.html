@@ -139,7 +139,7 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近国外漏洞披露平台<code>hackerone</code>上，一位白帽子发现<code>Ube</code>r一修改任意账户密码的逻辑漏洞，获得了<code>$10000</code>美元的奖励。</p>
+    <section class="markdown-content"><h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近国外漏洞披露平台<code>hackerone</code>上，一位白帽子发现<code>Uber</code>一修改任意账户密码的逻辑漏洞，获得了<code>$10000</code>美元的奖励。</p>
 <p>所以如何通过代码审计来挖掘逻辑漏洞是安全研究人员和开发人员必须熟悉的技能。本篇将主要讲解代码审计中的任意用户密码重置的安全问题。</p>
 <p>找回密码的原理：验证<code>auth</code>，在找回密码的时候生成一个<code>auth</code>，然后存储到数据库中，然后把找回密码的地址发到邮箱中<code>url</code>中就含有<code>auth</code>，由用户点开后就能修改密码。</p>
 <p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19o5izaq7j30qr0f7mzv.jpg" alt></p>
@@ -199,7 +199,7 @@
 <span class="token variable">$code</span> <span class="token operator">=</span> <span class="token variable">$action</span> <span class="token operator">==</span> <span class="token string">'DECODE'</span> <span class="token operator">?</span> <span class="token variable">$code</span> <span class="token punctuation">:</span> <span class="token function">base64_encode</span><span class="token punctuation">(</span><span class="token variable">$code</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token keyword">return</span> <span class="token variable">$code</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>函数里有个<code>$key</code>是生成<code>$auth</code>的关键，而<code>$key</code>是对一个字符串进行了截取操作，里面<code>$_SERVER[&quot;HTTP_USER_AGENT&quot;]</code>是我们请求<code>header</code>里的<code>user_agent</code>变量，用户可控；后面有个<code>PP_KEY</code>居然没有初始化，至此<code>$key</code>也可控了即<code>$auth</code>可控，最终就可以构造找回密码链接来重置任意账户密码了。</p>
+<p>函数里有个<code>$key</code>是生成<code>$auth</code>的关键，而<code>$key</code>是对一个字符串进行了截取操作，里面<code>$_SERVER[&quot;HTTP_USER_AGENT&quot;]</code>是我们请求<code>header</code>里的<code>user_agent</code>变量，用户可控，后面有个<code>PP_KEY</code>居然没有初始化，至此<code>$key</code>也可控了即<code>$auth</code>可控，最终就可以构造找回密码链接来重置任意账户密码了。</p>
 </section>
     <!-- Tags START -->
     
