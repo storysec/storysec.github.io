@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://storysec.github.io/link/index.html</loc>
+    
+    <lastmod>2019-07-28T02:08:46.451Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://storysec.github.io/2018/07/27/jdbc-ji-chu-xue-xi-bi-ji/</loc>
     
     <lastmod>2019-07-28T01:58:53.856Z</lastmod>
@@ -124,13 +131,6 @@
     <loc>https://storysec.github.io/archives/index.html</loc>
     
     <lastmod>2019-07-27T06:02:34.942Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://storysec.github.io/friends/index.html</loc>
-    
-    <lastmod>2019-07-27T04:00:26.376Z</lastmod>
     
   </url>
   
