@@ -144,20 +144,18 @@
 <h2 id="0x02-文件越权访问"><a href="#0x02-文件越权访问" class="headerlink" title="0x02 文件越权访问"></a>0x02 文件越权访问</h2><p><code>Tips</code>:</p>
 <p><code>PHP</code>中被引入的全局文件像<code>global.php</code>和<code>common.php</code>会对用户是否登录进行验证，如果未登录则跳转到登录页面，所以我们可以吧没有包含 <code>global.php</code>和<code>common.php</code>的<code>php</code>文件定义为可越权访问的文件。在<code>Linux</code>环境里可以使用<code>find</code>命令快速定为可越权的文件：</p>
 <p>1.在<code>etc</code>下查找没有包含<code>common.php</code>字符串的<code>php</code>文件</p>
-<pre><code>find /etc -name &quot;*.php&quot; | xargs grep -L &quot;common.php&quot;</code></pre><p>2.在<code>etc</code>下查找所有包含<code>common.php</code>字符串的<code>php</code>文件</p>
-<pre><code>find /etc -name &quot;*.php&quot; | xargs grep &quot;common.php&quot;</code></pre><p>案例：</p>
+<pre class="line-numbers language-bash"><code class="language-bash"><span class="token function">find</span> /etc -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> -L <span class="token string">"common.php"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>2.在<code>etc</code>下查找所有包含<code>common.php</code>字符串的<code>php</code>文件</p>
+<pre class="line-numbers language-bash"><code class="language-bash"><span class="token function">find</span> /etc -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> <span class="token string">"common.php"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>案例：</p>
 <p>缺陷编号：<code>WooYun-2015-98084</code><br>漏洞标题：佑友<code>mailgard</code> <code>webmail</code>任意文件上传导致<code>getshell</code>（无需登录）<br>漏洞链接：<code>http://wooyun.org/bugs/wooyun-2010-098084</code></p>
 <p>简单分析下这个漏洞，没有包含根目录下<code>global.php</code>的文件，都不会跳转到登录界面即存在越权访问，所以查找可能存在越权访问的文件：</p>
-<pre><code>$ find -name &quot;*.php&quot; | xargs grep -L -E &quot;^require_once.+(\.\.\/global|[^/]global)\.php.+;$&quot;</code></pre><p>结果如下：</p>
-<pre><code>./overflow_alarm.php
-./sms_send.php
-./src/old.rule.php
-./src/public_folders_upload.php
-./src/big_attach.php
-./src/big_att_upload.php
-./src/read_data.php
-./src/upload.php
-./sync/linkman.php</code></pre><p>然后就可以进一步去发现敏感信息泄露、注入和上传等漏洞了。</p>
+<pre class="line-numbers language-bash"><code class="language-bash">$ <span class="token function">find</span> -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> -L -E <span class="token string">"^require_once.+(\.\.\/global|[^/]global)\.php.+;$"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>结果如下：</p>
+<blockquote>
+<p>./overflow_alarm.php<br>./sms_send.php<br>./src/old.rule.php<br>./src/public_folders_upload.php<br>./src/big_attach.php<br>./src/big_att_upload.php<br>./src/read_data.php<br>./src/upload.php<br>./sync/linkman.php</p>
+</blockquote>
+<p>然后就可以进一步去发现敏感信息泄露、注入和上传等漏洞了。</p>
 <h2 id="0x03-文件上传漏洞"><a href="#0x03-文件上传漏洞" class="headerlink" title="0x03 文件上传漏洞"></a>0x03 文件上传漏洞</h2><p>案例：</p>
 <p>以某厂商<code>http://www.xx00.com</code>的源码为例</p>
 <p>1.首先全局搜索<code>type=&quot;file&quot;</code>来判断有没有上传点(关键词<code>$_FILE</code>是查找上传文件逻辑处理的地方)：</p>

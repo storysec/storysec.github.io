@@ -170,7 +170,10 @@
 <p>测试发现可以继续愉快的包含了</p>
 <p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19d3x78phj30k007mmzo.jpg" alt></p>
 <h3 id="3-包含共享文件"><a href="#3-包含共享文件" class="headerlink" title="3.包含共享文件"></a>3.包含共享文件</h3><p>这种情况是你可以传到文件到内网某台服务器192.168.1.102，假如这台服务器是ftp是开了共享的就可以通过下面方法进行包含：</p>
-<pre><code>http://localhost/fileinclude.php?action=\\192.168.1.102\share\test.txt</code></pre><h2 id="0x05-截断技巧-："><a href="#0x05-截断技巧-：" class="headerlink" title="0x05 截断技巧 ："></a>0x05 截断技巧 ：</h2><h3 id="1-PHP-00截断"><a href="#1-PHP-00截断" class="headerlink" title="1.PHP %00截断"></a>1.<code>PHP</code> <code>%00</code>截断</h3><p>截断条件：</p>
+<blockquote>
+<p><a href="http://localhost/fileinclude.php?action=\\192.168.1.102\share\test.txt" target="_blank" rel="noopener">http://localhost/fileinclude.php?action=\\192.168.1.102\share\test.txt</a></p>
+</blockquote>
+<h2 id="0x05-截断技巧-："><a href="#0x05-截断技巧-：" class="headerlink" title="0x05 截断技巧 ："></a>0x05 截断技巧 ：</h2><h3 id="1-PHP-00截断"><a href="#1-PHP-00截断" class="headerlink" title="1.PHP %00截断"></a>1.<code>PHP</code> <code>%00</code>截断</h3><p>截断条件：</p>
 <p>1)<code>PHP</code>版本小于<code>5.3.4</code>，详情请查看 <a href="https://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2006-7243" target="_blank">[CVE-2006-7243]</a></p>
 <p>2)<code>magic_quotes_gpc=Off</code>，否则<code>%00</code>这种空字符会被转义为<code>\0</code></p>
 <p>搭建好满足上面两个条件的测试环境后，可以用下面的漏洞代码来测试：</p>

@@ -169,7 +169,10 @@
 <span class="token function">fclose</span><span class="token punctuation">(</span><span class="token variable">$file</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token delimiter">?></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>尝试发现可以继续下载任意文件了</p>
-<pre><code>http://localhost/filedown.php?name=phpinfo.php</code></pre><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19e0d1t7hj30k002pjrr.jpg" alt></p>
+<blockquote>
+<p><a href="http://localhost/filedown.php?name=phpinfo.php" target="_blank" rel="noopener">http://localhost/filedown.php?name=phpinfo.php</a></p>
+</blockquote>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19e0d1t7hj30k002pjrr.jpg" alt></p>
 <p>当然文件下载相关的函数不止这两个，还请自行搜寻和积累~</p>
 <h2 id="0x03-文件删除："><a href="#0x03-文件删除：" class="headerlink" title="0x03 文件删除："></a>0x03 文件删除：</h2><p>程序员在码代码使用了<code>unlink()</code>等函数之前未对传入的文件名或路径做有效的校验，从而被黑客利用删除任意文件造成损失。之前某知名的<code>Mail</code>系统就存在这一漏洞，缺陷代码如下：</p>
 <pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
@@ -184,7 +187,10 @@
 <span class="token punctuation">}</span>
 <span class="token delimiter">?></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>本地测试发现返回为<code>1</code>，证明删除了<code>db.sql</code>文件</p>
-<pre><code>http://localhost/deleteFile.php?fileUrl=db.sql</code></pre><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19e0nud81j30k001a747.jpg" alt></p>
+<blockquote>
+<p><a href="http://localhost/deleteFile.php?fileUrl=db.sql" target="_blank" rel="noopener">http://localhost/deleteFile.php?fileUrl=db.sql</a></p>
+</blockquote>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19e0nud81j30k001a747.jpg" alt></p>
 </section>
     <!-- Tags START -->
     

