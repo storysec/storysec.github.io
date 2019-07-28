@@ -229,7 +229,7 @@
 <p>之前出现过案例是覆盖表前缀上，例如<code>sql</code>执行语句如下：</p>
 <pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">select</span> title<span class="token punctuation">,</span>content <span class="token keyword">from</span> {$pre}news <span class="token keyword">where</span> id<span class="token operator">=</span><span class="token number">1</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>然后攻击者直接浏览器提交<code>pre=获取敏感信息的语句</code>来覆盖表前缀从而实现注入攻击。</p>
-<p><code>$$</code>变量覆盖</p>
+<p><code>$$</code><strong>变量覆盖</strong></p>
 <p>原理其实跟上面一样，有个很经典的<code>$$</code>变量覆盖的代码：</p>
 <pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
 <span class="token variable">$a</span><span class="token operator">=</span><span class="token number">22333</span><span class="token punctuation">;</span>
