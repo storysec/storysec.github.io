@@ -76,7 +76,7 @@ pre {
   font-weight: 600;
 }
 .tag-code {
-  font-family: 'Roboto Mono', Monaco, courier, monospace;
+  font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
   font-size: 0.8em;
   display: inline-block;
   background-color: #f8f8f8;
@@ -504,7 +504,7 @@ h2.article-head {
 .article-summary pre,
 .markdown-content code,
 .article-summary code {
-  font-family: 'Roboto Mono', Monaco, courier, monospace;
+  font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
 }
 @media screen and (max-width: 480px) {
