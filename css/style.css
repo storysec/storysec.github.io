@@ -935,7 +935,7 @@ h2.article-head {
 }
 .catalog-container {
   display: block;
-  margin-left: 20px;
+  margin-right: 20px;
   flex-basis: 280px;
   -webkit-flex-basis: 280px;
   flex-shrink: 0;
