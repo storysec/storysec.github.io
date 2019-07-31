@@ -1,469 +1,107 @@
-<!DOCTYPE html>
-<html>
-  <head><meta name="generator" content="Hexo 3.9.0">
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="referrer" content="no-referrer">
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
-  <meta name="description" content="关注网络安全">
-  <meta name="keyword" content="web安全 代码审计">
-  
-    <link rel="shortcut icon" href="/css/images/logo.png">
-  
-  <title>
-    
-      代码审计的艺术系列 第三篇 | 影风博客
-    
-  </title>
-  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/[object Object].min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
-  
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
-  
-    <script src="/js/qrious.js"></script>
-  
-  
-  
-  
-    <!-- MathJax support START -->
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        tex2jax: {
-          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-          processEscapes: true,
-          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-        }
-      });
-    </script>
+extends includes/layout.pug
 
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax(), i;
-        for (i=0; i < all.length; i += 1) {
-          all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-      });
-    </script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <!-- MathJax support END -->
-  
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-
-<link rel="stylesheet" href="/css/prism-story.css" type="text/css">
-<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
-<div class="wechat-share">
-  <img src="/css/images/logo.png">
-</div>
-
-  <body>
-    <header class="header fixed-header">
-  <div class="header-container">
-    <a class="home-link" href="/">
-      <div class="logo"></div>
-      <span>影风博客</span>
-    </a>
-    <ul class="right-list">
-      
-        <li class="list-item">
-          
-            <a href="/" class="item-link">主页</a>
-          
-        </li>
-      
-        <li class="list-item">
-          
-            <a href="/archives/" class="item-link">归档</a>
-          
-        </li>
-      
-        <li class="list-item">
-          
-            <a href="/tags/" class="item-link">标签</a>
-          
-        </li>
-      
-        <li class="list-item">
-          
-            <a href="/about/" class="item-link">关于</a>
-          
-        </li>
-      
-    </ul>
-    <div class="menu">
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-    </div>
-    <div class="menu-mask">
-      <ul class="menu-list">
-        
-          <li class="menu-item">
-            
-              <a href="/" class="menu-link">主页</a>
-            
-          </li>
-        
-          <li class="menu-item">
-            
-              <a href="/archives/" class="menu-link">归档</a>
-            
-          </li>
-        
-          <li class="menu-item">
-            
-              <a href="/tags/" class="menu-link">标签</a>
-            
-          </li>
-        
-          <li class="menu-item">
-            
-              <a href="/about/" class="menu-link">关于</a>
-            
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-</header>
-
-    <div id="article-banner">
-  <h2>代码审计的艺术系列 第三篇</h2>
-  <p class="post-date">2019-03-23</p>
-  <div class="arrow-down">
-    <a href="javascript:;"></a>
-  </div>
-</div>
-<main class="app-body flex-box">
-  <!-- Article START -->
-  <article class="post-article">
-    <section class="markdown-content"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>接白帽子分享之代码审计的艺术系列 第二篇，这里讲一些函数的错误使用会引发<code>SQL</code>注入的场景以及二次注入漏洞产生的原因。如果没看之前的内容，建议先看看前两篇。</p>
-<h2 id="0x02-准备"><a href="#0x02-准备" class="headerlink" title="0x02 准备"></a>0x02 准备</h2><p>知识储备：<code>php</code>基础、<code>MySQL</code>入门</p>
-<p>工具：<code>notepad++</code></p>
-<p>服务器环境：<code>wamp</code></p>
-<p>测试代码:见文中</p>
-<h2 id="0x03-全局防护Bypass中篇的脑图"><a href="#0x03-全局防护Bypass中篇的脑图" class="headerlink" title="0x03 全局防护Bypass中篇的脑图"></a>0x03 全局防护Bypass中篇的脑图</h2><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18cnyaochj31350gzjsj.jpg" alt></p>
-<h2 id="0x04-一些函数的错误使用导致SQL注入"><a href="#0x04-一些函数的错误使用导致SQL注入" class="headerlink" title="0x04 一些函数的错误使用导致SQL注入"></a>0x04 一些函数的错误使用导致SQL注入</h2><p>一些常用函数像<code>str_replace</code>、<code>stripslashes</code>的错误使用会导致绕过<code>addslashes</code>函数的全局防护，首先来看<code>str_replace</code>函数，有时写程序会使用<code>str_replace</code>函数将参数中的单引号、括号等字符替换为空，使用不当就会引发注入问题。缺陷代码如下：</p>
-<p><code>streplace.php</code>:</p>
-<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
-<span class="token keyword">require_once</span><span class="token punctuation">(</span><span class="token string">'common.php'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token variable">$conn</span> <span class="token operator">=</span> <span class="token function">mysql_connect</span><span class="token punctuation">(</span><span class="token string">'localhost'</span><span class="token punctuation">,</span> <span class="token string">'root'</span><span class="token punctuation">,</span> <span class="token string">'root'</span><span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">'bad!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token function">mysql_query</span><span class="token punctuation">(</span><span class="token string">"SET NAMES binary'"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token function">mysql_select_db</span><span class="token punctuation">(</span><span class="token string">'test'</span><span class="token punctuation">,</span> <span class="token variable">$conn</span><span class="token punctuation">)</span> <span class="token keyword">OR</span> <span class="token function">emMsg</span><span class="token punctuation">(</span><span class="token string">"数据库连接失败"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token variable">$tmp_id</span> <span class="token operator">=</span> <span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'id'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'id'</span><span class="token punctuation">]</span> <span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">;</span>
-<span class="token variable">$title</span> <span class="token operator">=</span> <span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'title'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'title'</span><span class="token punctuation">]</span> <span class="token punctuation">:</span> <span class="token string">'news title'</span><span class="token punctuation">;</span>
-<span class="token variable">$id</span> <span class="token operator">=</span> <span class="token function">str_replace</span><span class="token punctuation">(</span><span class="token string">"'"</span><span class="token punctuation">,</span><span class="token string">''</span><span class="token punctuation">,</span><span class="token variable">$tmp_id</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token variable">$sql</span> <span class="token operator">=</span> <span class="token string">"SELECT * FROM news WHERE id='{$id}' and title='{$title}'"</span><span class="token punctuation">;</span>
-<span class="token keyword">echo</span> <span class="token variable">$sql</span><span class="token punctuation">.</span><span class="token string">'&lt;br />'</span><span class="token punctuation">;</span>
-<span class="token variable">$result</span> <span class="token operator">=</span> <span class="token function">mysql_query</span><span class="token punctuation">(</span><span class="token variable">$sql</span><span class="token punctuation">,</span> <span class="token variable">$conn</span><span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token function">mysql_error</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
-<span class="token delimiter">?></span>
-<span class="token markup"><span class="token doctype">&lt;!DOCTYPE html></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span><span class="token punctuation">></span></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>head</span><span class="token punctuation">></span></span></span>
-    <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span> <span class="token attr-name">charset</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>utf-8<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span></span>
-    <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>title</span><span class="token punctuation">></span></span></span>新闻<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>title</span><span class="token punctuation">></span></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>head</span><span class="token punctuation">></span></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span></span>
-<span class="token delimiter">&lt;?php</span>
-<span class="token variable">$row</span> <span class="token operator">=</span> <span class="token function">mysql_fetch_array</span><span class="token punctuation">(</span><span class="token variable">$result</span><span class="token punctuation">,</span> <span class="token constant">MYSQL_ASSOC</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">echo</span> <span class="token string">"&lt;h3>{$row['title']}&lt;/h3>&lt;p>{$row['content']}&lt;p>\n"</span><span class="token punctuation">;</span>
-<span class="token function">mysql_free_result</span><span class="token punctuation">(</span><span class="token variable">$result</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token delimiter">?></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>浏览器输入:</p>
-<blockquote>
-<p><a href="http://localhost/sqltest/streplace.php?id=1&#39;&amp;title=news" target="_blank" rel="noopener">http://localhost/sqltest/streplace.php?id=1&#39;&amp;title=news</a> title</p>
-</blockquote>
-<p>发现报错了，我们直接打印出执行的<code>sql</code>语句如下图：</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a23dafcj30hs02aq2t.jpg" alt></p>
-<p>发现参数<code>id</code>右边的单引号被反斜杠转义成字符了，说明又可以注入了。</p>
-<p>简单分析下上面<code>id</code>参数的执行过程，<code>-1&#39;</code>经过<code>addslashes</code>函数转义后变成了<code>-1\&#39;</code>，然后再经过<code>str_replace</code>函数干掉了单引号变成了<code>-1\</code>，最后带入查询的语句才是下面这样：</p>
-<pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id<span class="token operator">=</span><span class="token string">'1\'and title='</span>news title'<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>反斜杠转义了<code>sql</code>查询语句里<code>id</code>后面那个单引号，导致<code>title</code>参数可以构造<code>sql</code>注入语句了，我们直接构造获取管理员账户密码的语句:</p>
-<blockquote>
-<p><a href="http://localhost/sqltest/streplace.php?id=-1&#39;&amp;title=union" target="_blank" rel="noopener">http://localhost/sqltest/streplace.php?id=-1&#39;&amp;title=union</a> select 1,2,concat(name,0x23,pass) from admin%23</p>
-</blockquote>
-<p>实际执行的<code>SQL</code>语句:</p>
-<pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id<span class="token operator">=</span><span class="token string">'-1\' and title='</span><span class="token keyword">union</span> <span class="token keyword">select</span> <span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span>concat<span class="token punctuation">(</span>name<span class="token punctuation">,</span><span class="token number">0x23</span><span class="token punctuation">,</span>pass<span class="token punctuation">)</span> <span class="token keyword">from</span> admin<span class="token comment" spellcheck="true">#'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a2btwcpj30hs056jre.jpg" alt></p>
-<p>接下来我们再看下<code>stripslashes</code>函数，这个函数的定义是删除由<code>addslashes()</code>函数添加的反斜杠，所以很明显使用不当的话就会引发<code>SQL</code>注入。缺陷代码如下：</p>
-<p><code>stripslashes.php</code>:</p>
-<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
-<span class="token keyword">require_once</span><span class="token punctuation">(</span><span class="token string">'common.php'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token variable">$conn</span> <span class="token operator">=</span> <span class="token function">mysql_connect</span><span class="token punctuation">(</span><span class="token string">'localhost'</span><span class="token punctuation">,</span> <span class="token string">'root'</span><span class="token punctuation">,</span> <span class="token string">'root'</span><span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">'bad!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token function">mysql_query</span><span class="token punctuation">(</span><span class="token string">"SET NAMES binary'"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token function">mysql_select_db</span><span class="token punctuation">(</span><span class="token string">'test'</span><span class="token punctuation">,</span> <span class="token variable">$conn</span><span class="token punctuation">)</span> <span class="token keyword">OR</span> <span class="token function">emMsg</span><span class="token punctuation">(</span><span class="token string">"数据库连接失败"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token variable">$tmp_id</span> <span class="token operator">=</span> <span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'id'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token variable">$_GET</span><span class="token punctuation">[</span><span class="token string">'id'</span><span class="token punctuation">]</span> <span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">;</span>
-<span class="token variable">$id</span> <span class="token operator">=</span> <span class="token function">stripslashes</span><span class="token punctuation">(</span><span class="token variable">$tmp_id</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token variable">$sql</span> <span class="token operator">=</span> <span class="token string">"SELECT * FROM news WHERE id='{$id}'"</span><span class="token punctuation">;</span>
-<span class="token keyword">echo</span> <span class="token variable">$sql</span><span class="token punctuation">.</span><span class="token string">'&lt;br />'</span><span class="token punctuation">;</span>
-<span class="token variable">$result</span> <span class="token operator">=</span> <span class="token function">mysql_query</span><span class="token punctuation">(</span><span class="token variable">$sql</span><span class="token punctuation">,</span> <span class="token variable">$conn</span><span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token function">mysql_error</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
-<span class="token delimiter">?></span>
-<span class="token markup"><span class="token doctype">&lt;!DOCTYPE html></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span><span class="token punctuation">></span></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>head</span><span class="token punctuation">></span></span></span>
-    <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span> <span class="token attr-name">charset</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>utf-8<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span></span>
-    <span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>title</span><span class="token punctuation">></span></span></span>新闻<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>title</span><span class="token punctuation">></span></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>head</span><span class="token punctuation">></span></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span></span>
-<span class="token delimiter">&lt;?php</span>
-<span class="token variable">$row</span> <span class="token operator">=</span> <span class="token function">mysql_fetch_array</span><span class="token punctuation">(</span><span class="token variable">$result</span><span class="token punctuation">,</span> <span class="token constant">MYSQL_ASSOC</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">echo</span> <span class="token string">"&lt;h3>{$row['title']}&lt;/h3>&lt;p>{$row['content']}&lt;p>\n"</span><span class="token punctuation">;</span>
-<span class="token function">mysql_free_result</span><span class="token punctuation">(</span><span class="token variable">$result</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token delimiter">?></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span></span>
-<span class="token markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>浏览器输入<code>http://localhost/sqltest/stripslashes.php?id=-1&#39;</code>，发现报错了，<code>echo</code>出执行的<code>sql</code>语句如下图：</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a2mzxbnj30hs02ja9x.jpg" alt></p>
-<p>分析下参数<code>id</code>的执行过程，<code>-1&#39;</code>经过<code>addslashes</code>函数转义后变成了<code>-1\&#39;</code>，然后再经过<code>stripslashes</code>函数干掉了反斜杠变成了<code>-1&#39;</code>，所以又可以愉快的注入了。<br>获取管理员账户密码的语句:</p>
-<blockquote>
-<p><a href="http://localhost/sqltest/stripslashes.php?id=-1&#39;" target="_blank" rel="noopener">http://localhost/sqltest/stripslashes.php?id=-1&#39;</a> union select 1,2,concat(name,0x23,pass) from admin%23</p>
-</blockquote>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a2ud2ubj30hs05o74a.jpg" alt></p>
-<p>实际执行的<code>SQL</code>语句:</p>
-<pre class="line-numbers language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> news <span class="token keyword">WHERE</span> id<span class="token operator">=</span><span class="token string">'-1'</span> <span class="token keyword">union</span> <span class="token keyword">select</span> <span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span>concat<span class="token punctuation">(</span>name<span class="token punctuation">,</span><span class="token number">0x23</span><span class="token punctuation">,</span>pass<span class="token punctuation">)</span> <span class="token keyword">from</span> admin<span class="token comment" spellcheck="true">#'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<h2 id="0x05-二次注入产生的原因"><a href="#0x05-二次注入产生的原因" class="headerlink" title="0x05 二次注入产生的原因"></a>0x05 二次注入产生的原因</h2><p>二次注入也是一种很常见的<code>sql</code>注入，它涉及到入库和出库。假如我们注册了一个网站，填写个人资料后保存时数据库里执行类似<code>insert into test values(1,&#39;braid&#39;,&#39;18&#39;,&#39;run&#39;)</code>这种<code>sql</code>语句，代表我向数据库表<code>test</code>里插入昵称为<code>braid</code>，年龄<code>18</code>岁，爱好是<code>run</code>的一个操作。接下来看下单引号在这条语句执行过程和<code>mysql</code>中的变化：</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18a33ebgxj30hs06j74b.jpg" alt></p>
-<p>假如昵称引入一个单引号为<code>braid&#39;</code>,那么经过转义后入库的语句为<code>insert into test values(1,&#39;braid\&#39;&#39;,&#39;18&#39;,&#39;run&#39;)</code>，然后我们看下<code>mysql</code>执行这条语句后数据库里内容变化：</p>
-<p>我们执行一条查询语句后发现<code>braid\&#39;</code>入库后变成了<code>braid&#39;</code>，转义字符消失，所以在一些页面输出昵称的地方又可以构造注入语句获取管理员账户密码了~</p>
-</section>
-    <!-- Tags START -->
-    
-      <div class="tags">
-        <span>Tags:</span>
-        
-  <a href="/tags#代码审计" >
-    <span class="tag-code">代码审计</span>
-  </a>
-
-      </div>
-    
-    <!-- Tags END -->
-    <!-- NAV START -->
-    
-  <div class="nav-container">
-    <!-- reverse left and right to put prev and next in a more logic postition -->
-    
-      <a class="nav-left" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-er-pian/">
-        <span class="nav-arrow">← </span>
-        
-          代码审计的艺术系列 第二篇
-        
-      </a>
-    
-    
-      <a class="nav-right" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-si-pian/">
-        
-          代码审计的艺术系列 第四篇
-        
-        <span class="nav-arrow"> →</span>
-      </a>
-    
-  </div>
-
-    <!-- NAV END -->
-    <!-- 打赏 START -->
-    
-      <div class="money-like">
-        <div class="reward-btn">
-          赏
-          <span class="money-code">
-            <span class="alipay-code">
-              <div class="code-image"></div>
-              <b>使用支付宝打赏</b>
-            </span>
-            <span class="wechat-code">
-              <div class="code-image"></div>
-              <b>使用微信打赏</b>
-            </span>
-          </span>
-        </div>
-        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
-      </div>
-    
-    <!-- 打赏 END -->
-    <!-- 二维码 START -->
-    
-      <div class="qrcode">
-        <canvas id="share-qrcode"></canvas>
-        <p class="notice">扫描二维码，分享此文章</p>
-      </div>
-    
-    <!-- 二维码 END -->
-    
-      <!-- No Comment -->
-    
-  </article>
-  <!-- Article END -->
-  <!-- Catalog START -->
-  
-    <aside class="catalog-container">
-  <div class="toc-main">
-    <strong class="toc-title">Catalog</strong>
-    
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x01-前言"><span class="toc-nav-text">0x01 前言</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x02-准备"><span class="toc-nav-text">0x02 准备</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x03-全局防护Bypass中篇的脑图"><span class="toc-nav-text">0x03 全局防护Bypass中篇的脑图</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x04-一些函数的错误使用导致SQL注入"><span class="toc-nav-text">0x04 一些函数的错误使用导致SQL注入</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x05-二次注入产生的原因"><span class="toc-nav-text">0x05 二次注入产生的原因</span></a></li></ol>
-    
-  </div>
-</aside>
-  
-  <!-- Catalog END -->
-</main>
-
-<script>
-  (function () {
-    var url = 'https://storysec.github.io/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-san-pian/';
-    var banner = ''
-    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
-      $('#article-banner').css({
-        'background-image': 'url(' + banner + ')'
-      })
-    } else {
-      $('#article-banner').geopattern(url)
-    }
-    $('.header').removeClass('fixed-header')
-
-    // error image
-    $(".markdown-content img").on('error', function() {
-      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
-      $(this).css({
-        'cursor': 'default'
-      })
-    })
-
-    // zoom image
-    $(".markdown-content img").on('click', function() {
-      var src = $(this).attr('src')
-      if (src !== 'http://file.muyutech.com/error-img.png') {
-        var imageW = $(this).width()
-        var imageH = $(this).height()
-
-        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
-        zoom = zoom < 1 ? 1 : zoom
-        zoom = zoom > 2 ? 2 : zoom
-        var transY = (($(window).height() - imageH) / 2).toFixed(2)
-
-        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
-        $('.image-view-wrap').addClass('wrap-active')
-        $('.image-view-wrap img').css({
-          'width': `${imageW}`,
-          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
-        })
-        $('html').css('overflow', 'hidden')
-
-        $('.image-view-wrap').on('click', function() {
-          $(this).remove()
-          $('html').attr('style', '')
-        })
-      }
-    })
-  })();
-</script>
-
-
-  <script>
-    var qr = new QRious({
-      element: document.getElementById('share-qrcode'),
-      value: document.location.href
-    });
-  </script>
-
-
-
-
-
-
-    <div class="scroll-top">
-  <span class="arrow-icon"></span>
-</div>
-    <footer class="app-footer">
-<div align="center">
-    <table width="980" height="35" border="0" align="center">
-        <tr>
-            <td>
-            友情链接：&nbsp;&nbsp;
-            <a target="_blank" href="https://woj.app/">蜗居</a>
-			&nbsp;|&nbsp;
-            <a target="_blank" href="https://mrxn.net">Mrxn</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://hacktech.cn">Akkuman</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://www.bugsafe.cn">Poacher</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://www.se7ensec.cn">Se7en</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="https://www.ipz.me/">影乐</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://www.jiufox.com/">九尾狐</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://azfashao.com/">爱在发烧</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="https://www.web443.com/">Web443</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="https://deelmind.cn/">DeeLMind</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://www.moonsec.com/">暗月</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="https://xingqingsafe.github.io/">星晴</a>
-            </td>
-        </tr>
-    </table>
-</div>
-
-<span>
-    本站总访问量<span id="busuanzi_value_site_pv"></span>次
-</span>|
-<span>
-  本站访客数<span id="busuanzi_value_site_uv"></span>人次
-</span>
-  <p class="copyright">
-    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
-    <br>
-    Theme by <a href="https://github.com/yanm1ng/hexo-theme-vexo" target="_blank">yanm1ng</a>
-  </p>
-
-</footer>
-
-<script>
-  function async(u, c) {
-    var d = document, t = 'script',
-      o = d.createElement(t),
-      s = d.getElementsByTagName(t)[0];
-    o.src = u;
-    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
-    s.parentNode.insertBefore(o, s);
-  }
-</script>
-<script>
-  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
-    FastClick.attach(document.body);
-  })
-</script>
-
-<script>
-  var hasLine = 'true';
-  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
-    $('figure pre').each(function(i, block) {
-      var figure = $(this).parents('figure');
-      if (hasLine === 'false') {
-        figure.find('.gutter').hide();
-      }
-      var lang = figure.attr('class').split(' ')[1] || 'code';
-      var codeHtml = $(this).html();
-      var codeTag = document.createElement('code');
-      codeTag.className = lang;
-      codeTag.innerHTML = codeHtml;
-      $(this).attr('class', '').empty().html(codeTag);
-      figure.attr('data-lang', lang.toUpperCase());
-      hljs.highlightBlock(block);
-    });
-  })
-</script>
-<!-- Baidu Tongji -->
-
-<script src="/js/script.js"></script>
-  </body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug

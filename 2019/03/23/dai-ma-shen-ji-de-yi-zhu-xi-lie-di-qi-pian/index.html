@@ -1,413 +1,107 @@
-<!DOCTYPE html>
-<html>
-  <head><meta name="generator" content="Hexo 3.9.0">
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="referrer" content="no-referrer">
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
-  <meta name="description" content="关注网络安全">
-  <meta name="keyword" content="web安全 代码审计">
-  
-    <link rel="shortcut icon" href="/css/images/logo.png">
-  
-  <title>
-    
-      代码审计的艺术系列 第七篇 | 影风博客
-    
-  </title>
-  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/[object Object].min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
-  
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
-  
-    <script src="/js/qrious.js"></script>
-  
-  
-  
-  
-    <!-- MathJax support START -->
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        tex2jax: {
-          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-          processEscapes: true,
-          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-        }
-      });
-    </script>
+extends includes/layout.pug
 
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax(), i;
-        for (i=0; i < all.length; i += 1) {
-          all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-      });
-    </script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <!-- MathJax support END -->
-  
+block top_img
+  - var top_img = page.top_img || theme.post_meta.top_img || theme.top_img || config.top_img
+  if (top_img && page.top_img !== false)
+    - var bg_img = top_img !== true ? `background-image: url(${top_img})` : ''
+    - var flag = top_img === true ? 'no-bg' : ''
+    div#top-container(style=bg_img class=flag)
+      include ./includes/header.pug
+      #post-info
+        #post-title= page.title || _p('no_title')
+        #post-meta
+          if (theme.post_meta.date_type)
+            if (theme.post_meta.date_type === 'both')
+              time.post-meta__date
+                i.fa.fa-calendar(aria-hidden="true")
+                =' '+_p('post.created')+' '+date(page.date, config.date_format)
+                span.post-meta__separator |
+                i.fa.fa-calendar-check-o(aria-hidden="true")
+                =' '+_p('post.updated')+' '+date(page.updated, config.date_format)
+            else
+              - var date_type = theme.post_meta.date_type === 'updated' ? 'updated' : 'date'
+              time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+          if (theme.post_meta.categories && page.categories.data.length > 0)
+            if (theme.post_meta.date_type)
+              span.post-meta__separator |
+            each item, index in page.categories.data
+              i.fa.fa-inbox.post-meta__icon(aria-hidden="true")
+              a(href=url_for(item.path)).post-meta__categories #[=item.name]
+              if (index < page.categories.data.length - 1)
+                 i.fa.fa-angle-right(aria-hidden="true")
+          if (theme.disqus.enable && theme.disqus.count)
+            if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+              span.post-meta__separator |
+            i.fa.fa-comment-o.post-meta__icon(aria-hidden="true")
+            a(href=url_for(page.path) + '#disqus_thread')
+              span.disqus-comment-count(data-disqus-identifier=page.path)
+          if (theme.wordcount && theme.wordcount.enable)
+            .post-meta-wordcount
+              span= _p('post.wordcount') + ': '
+              span.word-count= wordcount(page.content)
+              span.post-meta__separator |
+              span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+  else
+    div#top-container.plain
+      include ./includes/header.pug
 
-
-<link rel="stylesheet" href="/css/prism-story.css" type="text/css">
-<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
-<div class="wechat-share">
-  <img src="/css/images/logo.png">
-</div>
-
-  <body>
-    <header class="header fixed-header">
-  <div class="header-container">
-    <a class="home-link" href="/">
-      <div class="logo"></div>
-      <span>影风博客</span>
-    </a>
-    <ul class="right-list">
-      
-        <li class="list-item">
-          
-            <a href="/" class="item-link">主页</a>
-          
-        </li>
-      
-        <li class="list-item">
-          
-            <a href="/archives/" class="item-link">归档</a>
-          
-        </li>
-      
-        <li class="list-item">
-          
-            <a href="/tags/" class="item-link">标签</a>
-          
-        </li>
-      
-        <li class="list-item">
-          
-            <a href="/about/" class="item-link">关于</a>
-          
-        </li>
-      
-    </ul>
-    <div class="menu">
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-    </div>
-    <div class="menu-mask">
-      <ul class="menu-list">
-        
-          <li class="menu-item">
-            
-              <a href="/" class="menu-link">主页</a>
-            
-          </li>
-        
-          <li class="menu-item">
-            
-              <a href="/archives/" class="menu-link">归档</a>
-            
-          </li>
-        
-          <li class="menu-item">
-            
-              <a href="/tags/" class="menu-link">标签</a>
-            
-          </li>
-        
-          <li class="menu-item">
-            
-              <a href="/about/" class="menu-link">关于</a>
-            
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-</header>
-
-    <div id="article-banner">
-  <h2>代码审计的艺术系列 第七篇</h2>
-  <p class="post-date">2019-03-23</p>
-  <div class="arrow-down">
-    <a href="javascript:;"></a>
-  </div>
-</div>
-<main class="app-body flex-box">
-  <!-- Article START -->
-  <article class="post-article">
-    <section class="markdown-content"><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言:"></a>0x00 前言:</h2><p>接下来的几篇是对<code>PHP</code>代码审计中文件操作相关漏洞挖掘的总结。文件越权和上传漏洞在审计中非常常见，所以给你一套源码该如何去搜索这两类漏洞是这篇文章要讨论的。</p>
-<h2 id="0x01-越权访问的脑图"><a href="#0x01-越权访问的脑图" class="headerlink" title="0x01 越权访问的脑图"></a>0x01 越权访问的脑图</h2><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kijgzrwj30jd04kjro.jpg" alt></p>
-<h2 id="0x02-文件越权访问"><a href="#0x02-文件越权访问" class="headerlink" title="0x02 文件越权访问"></a>0x02 文件越权访问</h2><p><code>Tips</code>:</p>
-<p><code>PHP</code>中被引入的全局文件像<code>global.php</code>和<code>common.php</code>会对用户是否登录进行验证，如果未登录则跳转到登录页面，所以我们可以吧没有包含 <code>global.php</code>和<code>common.php</code>的<code>php</code>文件定义为可越权访问的文件。在<code>Linux</code>环境里可以使用<code>find</code>命令快速定为可越权的文件：</p>
-<p>1.在<code>etc</code>下查找没有包含<code>common.php</code>字符串的<code>php</code>文件</p>
-<pre class="line-numbers language-bash"><code class="language-bash"><span class="token function">find</span> /etc -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> -L <span class="token string">"common.php"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>2.在<code>etc</code>下查找所有包含<code>common.php</code>字符串的<code>php</code>文件</p>
-<pre class="line-numbers language-bash"><code class="language-bash"><span class="token function">find</span> /etc -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> <span class="token string">"common.php"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>案例：</p>
-<p>缺陷编号：<code>WooYun-2015-98084</code><br>漏洞标题：佑友<code>mailgard</code> <code>webmail</code>任意文件上传导致<code>getshell</code>（无需登录）<br>漏洞链接：<code>http://wooyun.org/bugs/wooyun-2010-098084</code></p>
-<p>简单分析下这个漏洞，没有包含根目录下<code>global.php</code>的文件，都不会跳转到登录界面即存在越权访问，所以查找可能存在越权访问的文件：</p>
-<pre class="line-numbers language-bash"><code class="language-bash">$ <span class="token function">find</span> -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> -L -E <span class="token string">"^require_once.+(\.\.\/global|[^/]global)\.php.+;$"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>结果如下：</p>
-<blockquote>
-<p>./overflow_alarm.php<br>./sms_send.php<br>./src/old.rule.php<br>./src/public_folders_upload.php<br>./src/big_attach.php<br>./src/big_att_upload.php<br>./src/read_data.php<br>./src/upload.php<br>./sync/linkman.php</p>
-</blockquote>
-<p>然后就可以进一步去发现敏感信息泄露、注入和上传等漏洞了。</p>
-<h2 id="0x03-文件上传漏洞"><a href="#0x03-文件上传漏洞" class="headerlink" title="0x03 文件上传漏洞"></a>0x03 文件上传漏洞</h2><p>案例：</p>
-<p>以某厂商<code>http://www.xx00.com</code>的源码为例</p>
-<p>1.首先全局搜索<code>type=&quot;file&quot;</code>来判断有没有上传点(关键词<code>$_FILE</code>是查找上传文件逻辑处理的地方)：</p>
-<p>命令：</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjjv10xj30ic01c0sl.jpg" alt></p>
-<p>结果如下：</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjq3s8qj30k001vt9q.jpg" alt></p>
-<p>2.<code>xx00</code>也是用的<code>php</code>的框架，所以我们打开主页找<code>mvc</code>框架的影子：</p>
-<blockquote>
-<p><a href="http://www.xx00.com/at/gold_auction/auction_details/532" target="_blank" rel="noopener">http://www.xx00.com/at/gold_auction/auction_details/532</a><br><a href="http://www.xx00.com/at/index/baoming" target="_blank" rel="noopener">http://www.xx00.com/at/index/baoming</a></p>
-</blockquote>
-<p>根据上面两条和源码结构，判断功能函数在<code>/application/controller/at/</code>目录下</p>
-<p>并且判断出<code>http</code>的请求功能函数时应该遵循<code>domain/at/action/function/param</code>格式</p>
-<p>3.我们打开<code>/application/views/at/phone_test/display.php</code>，发现上传的<code>action=&quot;upload&quot;</code></p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjyvy9jj30k003mjse.jpg" alt></p>
-<p>4.打开<code>/application/controller/at/phone_test.php</code>，找到<code>upload</code>函数，分析代码可知有上传漏洞</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kk7ilx3j30k00ay77k.jpg" alt></p>
-</section>
-    <!-- Tags START -->
-    
-      <div class="tags">
-        <span>Tags:</span>
-        
-  <a href="/tags#代码审计" >
-    <span class="tag-code">代码审计</span>
-  </a>
-
-      </div>
-    
-    <!-- Tags END -->
-    <!-- NAV START -->
-    
-  <div class="nav-container">
-    <!-- reverse left and right to put prev and next in a more logic postition -->
-    
-      <a class="nav-left" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-liu-pian/">
-        <span class="nav-arrow">← </span>
-        
-          代码审计的艺术系列 第六篇
-        
-      </a>
-    
-    
-      <a class="nav-right" href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-ba-pian/">
-        
-          代码审计的艺术系列 第八篇
-        
-        <span class="nav-arrow"> →</span>
-      </a>
-    
-  </div>
-
-    <!-- NAV END -->
-    <!-- 打赏 START -->
-    
-      <div class="money-like">
-        <div class="reward-btn">
-          赏
-          <span class="money-code">
-            <span class="alipay-code">
-              <div class="code-image"></div>
-              <b>使用支付宝打赏</b>
-            </span>
-            <span class="wechat-code">
-              <div class="code-image"></div>
-              <b>使用微信打赏</b>
-            </span>
-          </span>
-        </div>
-        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
-      </div>
-    
-    <!-- 打赏 END -->
-    <!-- 二维码 START -->
-    
-      <div class="qrcode">
-        <canvas id="share-qrcode"></canvas>
-        <p class="notice">扫描二维码，分享此文章</p>
-      </div>
-    
-    <!-- 二维码 END -->
-    
-      <!-- No Comment -->
-    
-  </article>
-  <!-- Article END -->
-  <!-- Catalog START -->
-  
-    <aside class="catalog-container">
-  <div class="toc-main">
-    <strong class="toc-title">Catalog</strong>
-    
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x00-前言"><span class="toc-nav-text">0x00 前言:</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x01-越权访问的脑图"><span class="toc-nav-text">0x01 越权访问的脑图</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x02-文件越权访问"><span class="toc-nav-text">0x02 文件越权访问</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x03-文件上传漏洞"><span class="toc-nav-text">0x03 文件上传漏洞</span></a></li></ol>
-    
-  </div>
-</aside>
-  
-  <!-- Catalog END -->
-</main>
-
-<script>
-  (function () {
-    var url = 'https://storysec.github.io/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-qi-pian/';
-    var banner = ''
-    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
-      $('#article-banner').css({
-        'background-image': 'url(' + banner + ')'
-      })
-    } else {
-      $('#article-banner').geopattern(url)
-    }
-    $('.header').removeClass('fixed-header')
-
-    // error image
-    $(".markdown-content img").on('error', function() {
-      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
-      $(this).css({
-        'cursor': 'default'
-      })
-    })
-
-    // zoom image
-    $(".markdown-content img").on('click', function() {
-      var src = $(this).attr('src')
-      if (src !== 'http://file.muyutech.com/error-img.png') {
-        var imageW = $(this).width()
-        var imageH = $(this).height()
-
-        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
-        zoom = zoom < 1 ? 1 : zoom
-        zoom = zoom > 2 ? 2 : zoom
-        var transY = (($(window).height() - imageH) / 2).toFixed(2)
-
-        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
-        $('.image-view-wrap').addClass('wrap-active')
-        $('.image-view-wrap img').css({
-          'width': `${imageW}`,
-          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
-        })
-        $('html').css('overflow', 'hidden')
-
-        $('.image-view-wrap').on('click', function() {
-          $(this).remove()
-          $('html').attr('style', '')
-        })
-      }
-    })
-  })();
-</script>
-
-
-  <script>
-    var qr = new QRious({
-      element: document.getElementById('share-qrcode'),
-      value: document.location.href
-    });
-  </script>
-
-
-
-
-
-
-    <div class="scroll-top">
-  <span class="arrow-icon"></span>
-</div>
-    <footer class="app-footer">
-<div align="center">
-    <table width="980" height="35" border="0" align="center">
-        <tr>
-            <td>
-            友情链接：&nbsp;&nbsp;
-            <a target="_blank" href="https://woj.app/">蜗居</a>
-			&nbsp;|&nbsp;
-            <a target="_blank" href="https://mrxn.net">Mrxn</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://hacktech.cn">Akkuman</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://www.bugsafe.cn">Poacher</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://www.se7ensec.cn">Se7en</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="https://www.ipz.me/">影乐</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://www.jiufox.com/">九尾狐</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://azfashao.com/">爱在发烧</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="https://www.web443.com/">Web443</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="https://deelmind.cn/">DeeLMind</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="http://www.moonsec.com/">暗月</a>
-            &nbsp;|&nbsp;
-            <a target="_blank" href="https://xingqingsafe.github.io/">星晴</a>
-            </td>
-        </tr>
-    </table>
-</div>
-
-<span>
-    本站总访问量<span id="busuanzi_value_site_pv"></span>次
-</span>|
-<span>
-  本站访客数<span id="busuanzi_value_site_uv"></span>人次
-</span>
-  <p class="copyright">
-    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
-    <br>
-    Theme by <a href="https://github.com/yanm1ng/hexo-theme-vexo" target="_blank">yanm1ng</a>
-  </p>
-
-</footer>
-
-<script>
-  function async(u, c) {
-    var d = document, t = 'script',
-      o = d.createElement(t),
-      s = d.getElementsByTagName(t)[0];
-    o.src = u;
-    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
-    s.parentNode.insertBefore(o, s);
-  }
-</script>
-<script>
-  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
-    FastClick.attach(document.body);
-  })
-</script>
-
-<script>
-  var hasLine = 'true';
-  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
-    $('figure pre').each(function(i, block) {
-      var figure = $(this).parents('figure');
-      if (hasLine === 'false') {
-        figure.find('.gutter').hide();
-      }
-      var lang = figure.attr('class').split(' ')[1] || 'code';
-      var codeHtml = $(this).html();
-      var codeTag = document.createElement('code');
-      codeTag.className = lang;
-      codeTag.innerHTML = codeHtml;
-      $(this).attr('class', '').empty().html(codeTag);
-      figure.attr('data-lang', lang.toUpperCase());
-      hljs.highlightBlock(block);
-    });
-  })
-</script>
-<!-- Baidu Tongji -->
-
-<script src="/js/script.js"></script>
-  </body>
-</html>
+block content
+  article#post(class="")
+    if (!top_img)
+      #post-title.plain= page.title || _p('no_title')
+      #post-meta
+        if (theme.post_meta.date_type)
+          - var date_type = theme.post_meta.date_type === 'updated' ? '' : 'date'
+          time.post-meta__date #[i.fa.fa-calendar(aria-hidden="true")] #[=date(page[date_type], config.date_format)]
+        if (theme.post_meta.categories && page.categories.data.length > 0)
+          if (theme.post_meta.date_type)
+            span.post-meta__separator |
+          each item, index in page.categories.data
+            i.fa.fa-inbox(aria-hidden="true")
+            a(href=url_for(item.path)).post-meta__categories  #[=item.name]
+            if (index < page.categories.data.length - 1)
+                i.fa.fa-angle-right.post-meta__separator(aria-hidden="true")
+        if (theme.disqus.enable && theme.disqus.count)
+          if (theme.post_meta.date_type || theme.post_meta.categories && page.categories.data.length > 0)
+            span.post-meta__separator |
+          i.fa.fa-comment-o(aria-hidden="true")
+          a(href=url_for(page.path) + '#disqus_thread')
+            span.disqus-comment-count(data-disqus-identifier=page.path)
+        if (theme.wordcount && theme.wordcount.enable)
+          span.post-meta__separator |
+          span.post-meta-wordcount
+            span= _p('post.wordcount') + ': '
+            span.word-count= wordcount(page.content)
+            span.post-meta__separator |
+            span= _p('post.min2read', min2read(page.content, {cn: 350, en: 160}))
+    #post-content.article-container!= page.content
+  if (theme.post_copyright && theme.post_copyright.enable)
+    .post-copyright
+      .post-copyright__author
+        span.post-copyright-meta= _p('post.copyright.author') + ": "
+        span.post-copyright-info
+          a(href=`mailto:${config.email}`) #[=config.author]
+      .post-copyright__type
+        span.post-copyright-meta= _p('post.copyright.link') + ": "
+        span.post-copyright-info
+          a(href=url_for(page.permalink)) #[=page.permalink]
+      .post-copyright__notice
+        span.post-copyright-meta= _p('post.copyright.copyright_notice') + ": "
+        span.post-copyright-info!= _p('post.copyright.copyright_content', theme.post_copyright.license_url, theme.post_copyright.license, config.url, config.title)
+  if (theme.post_meta.tags)
+    .post-meta__tag-list
+      each item, index in page.tags.data
+        a(href=url_for(item.path)).post-meta__tags #[=item.name]
+  if (theme.QR_code)
+    if (theme.QR_code.length > 0)
+      .post-qr-code
+        each item in theme.QR_code
+          .post-qr-code-item
+            img.post-qr-code__img(src=(item.itemlist||item).img)
+            .post-qr-code__desc=(item.itemlist||item).text
+  include includes/share/index.pug
+  include includes/pagination.pug
+  if (theme.adv && theme.adv.enable)
+    .post-adv!= theme.adv.info
+  if page.comments !== false
+    include includes/comments/index.pug
