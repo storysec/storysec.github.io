@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+  <head><meta name="generator" content="Hexo 3.9.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="referrer" content="no-referrer">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="关注网络安全">
+  <meta name="keyword" content="web安全 代码审计">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      影风博客
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/[object Object].min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+<link rel="stylesheet" href="/css/prism-story.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png">
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>影风博客</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">主页</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">归档</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">标签</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">关于</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">主页</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">归档</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">标签</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">关于</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>Archives</h2>
+  <p class="post-date">文章归档</p>
+</div>
+<main class="app-body" id="archives">
+  
+  
+  
+    <section class="time-section">
+  <h1 class="section-year">
+    2019
+  </h1>
+  <div class="section-list">
+    
+    
+      <div class="section-list-item">
+        <a href="/2019/07/28/bian-ji-qi-lou-dong-ji-chu-bi-ji/" class="archive-title">编辑器漏洞基础笔记</a>
+        <p class="archive-date">07-28</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/07/12/vmware-xu-ni-ji-san-chong-wang-luo-lian-jie-mo-shi-xiang-jie/" class="archive-title">VMware虚拟机三种网络连接模式详解</a>
+        <p class="archive-date">07-12</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/04/26/xss-tiao-zhan-xiao-you-xi-tong-guan-bi-ji/" class="archive-title">XSS挑战小游戏通关笔记</a>
+        <p class="archive-date">04-26</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-shi-san-pian/" class="archive-title">代码审计的艺术系列 第十三篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-shi-er-pian/" class="archive-title">代码审计的艺术系列 第十二篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-shi-yi-pian/" class="archive-title">代码审计的艺术系列 第十一篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-shi-pian/" class="archive-title">代码审计的艺术系列 第十篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-jiu-pian/" class="archive-title">代码审计的艺术系列 第九篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-ba-pian/" class="archive-title">代码审计的艺术系列 第八篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-qi-pian/" class="archive-title">代码审计的艺术系列 第七篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-liu-pian/" class="archive-title">代码审计的艺术系列 第六篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-wu-pian/" class="archive-title">代码审计的艺术系列 第五篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-si-pian/" class="archive-title">代码审计的艺术系列 第四篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-san-pian/" class="archive-title">代码审计的艺术系列 第三篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-er-pian/" class="archive-title">代码审计的艺术系列 第二篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/23/dai-ma-shen-ji-de-yi-zhu-xi-lie-di-yi-pian/" class="archive-title">代码审计的艺术系列 第一篇</a>
+        <p class="archive-date">03-23</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/20/php-dai-ma-shen-ji-ji-chu-bi-ji-90sec/" class="archive-title">PHP代码审计基础笔记-90sec</a>
+        <p class="archive-date">03-20</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2019/03/03/php-dai-ma-shen-ji-fen-duan-jiang-jie/" class="archive-title">PHP代码审计分段讲解</a>
+        <p class="archive-date">03-03</p>
+      </div>
+    
+  </div>
+</section>
+  
+    <section class="time-section">
+  <h1 class="section-year">
+    2018
+  </h1>
+  <div class="section-list">
+    
+    
+      <div class="section-list-item">
+        <a href="/2018/07/27/jdbc-ji-chu-xue-xi-bi-ji/" class="archive-title">JDBC基础学习笔记</a>
+        <p class="archive-date">07-27</p>
+      </div>
+    
+  </div>
+</section>
+  
+    <section class="time-section">
+  <h1 class="section-year">
+    2017
+  </h1>
+  <div class="section-list">
+    
+    
+      <div class="section-list-item">
+        <a href="/2017/08/03/shi-yong-c-he-c-shi-xian-fu-shu-chou-xiang-shu-ju-lei-xing-complex/" class="archive-title">使用CC++实现复数抽象数据类型Complex</a>
+        <p class="archive-date">08-03</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2017/08/02/chong-xin-kai-shi-zuo-hui-zi-ji/" class="archive-title">重新开始，做回自己</a>
+        <p class="archive-date">08-02</p>
+      </div>
+    
+  </div>
+</section>
+  
+</main>
+
+<script>
+  (function () {
+    var url = 'https://storysec.github.io/archives/2019/04/index.html';
+    $('#article-banner').geopattern(url);
+    $('.header').removeClass('fixed-header');
+  })();
+</script>
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+<div align="center">
+    <table width="980" height="35" border="0" align="center">
+        <tr>
+            <td>
+            友情链接：&nbsp;&nbsp;
+            <a target="_blank" href="https://woj.app/">蜗居</a>
+			&nbsp;|&nbsp;
+            <a target="_blank" href="https://mrxn.net">Mrxn</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://hacktech.cn">Akkuman</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.bugsafe.cn">Poacher</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.se7ensec.cn">Se7en</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://www.ipz.me/">影乐</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.jiufox.com/">九尾狐</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://azfashao.com/">爱在发烧</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://www.web443.com/">Web443</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://deelmind.cn/">DeeLMind</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.moonsec.com/">暗月</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://xingqingsafe.github.io/">星晴</a>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<span>
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>|
+<span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+</span>
+  <p class="copyright">
+    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng/hexo-theme-vexo" target="_blank">yanm1ng</a>
+  </p>
+
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>
