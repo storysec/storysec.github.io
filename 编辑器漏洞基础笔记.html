@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+  <head><meta name="generator" content="Hexo 3.9.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="referrer" content="no-referrer">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="关注网络安全">
+  <meta name="keyword" content="web安全 代码审计">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      编辑器漏洞基础笔记 | 影风博客
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/[object Object].min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+<link rel="stylesheet" href="/css/prism-story.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png">
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>影风博客</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">主页</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">归档</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">标签</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">关于</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">主页</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">归档</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">标签</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">关于</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>编辑器漏洞基础笔记</h2>
+  <p class="post-date">2019-07-28</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><p>常见编辑器：<code>ewebeditor</code>,<code>fckeditor</code>,<code>ckeditor</code>,<code>kindeditor</code>…</p>
+<h2 id="编辑器漏洞分类："><a href="#编辑器漏洞分类：" class="headerlink" title="编辑器漏洞分类："></a>编辑器漏洞分类：</h2><p><code>ewebeditor</code></p>
+<p><code>fckeditor</code><br>…</p>
+<p><strong>核心：编辑器地址</strong></p>
+<h2 id="ewebeditor漏洞利用："><a href="#ewebeditor漏洞利用：" class="headerlink" title="ewebeditor漏洞利用："></a>ewebeditor漏洞利用：</h2><h3 id="默认地址："><a href="#默认地址：" class="headerlink" title="默认地址："></a>默认地址：</h3><blockquote>
+<p><a href="http://www.xxx.com/ewebeditor" target="_blank" rel="noopener">www.xxx.com/ewebeditor</a><br><a href="http://www.xxx.com//admin/ewebeditor" target="_blank" rel="noopener">www.xxx.com//admin/ewebeditor</a><br><a href="http://www.xxx.com/admin/editor" target="_blank" rel="noopener">www.xxx.com/admin/editor</a></p>
+</blockquote>
+<h3 id="默认后台："><a href="#默认后台：" class="headerlink" title="默认后台："></a>默认后台：</h3><blockquote>
+<p>/ewebeditor/admin_login.asp<br>/ewebeditor/admin/login.asp</p>
+</blockquote>
+<h3 id="默认数据库"><a href="#默认数据库" class="headerlink" title="默认数据库:"></a>默认数据库:</h3><blockquote>
+<p>/ewebeditor/db/ewebeditor.mdb</p>
+</blockquote>
+<h3 id="默认用户密码："><a href="#默认用户密码：" class="headerlink" title="默认用户密码："></a>默认用户密码：</h3><blockquote>
+<p>admin admin888</p>
+</blockquote>
+<h3 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h3><blockquote>
+<p>找编辑器地址<br>找默认后台<br>尝试默认帐号密码登录<br>密码被修改尝试下载默认数据库-&gt;解密密码<br>登录后台<br>修改上传属性：添加上传类型(asaspp|asa|cer|asp;)<br>上传webshell</p>
+</blockquote>
+<p>实验：</p>
+<blockquote>
+<p><a href="http://192.168.135.132/e/admin_login.asp?action=login" target="_blank" rel="noopener">http://192.168.135.132/e/admin_login.asp?action=login</a></p>
+</blockquote>
+<blockquote>
+<p><a href="http://192.168.135.132/e/admin_style.asp?action=stylepreview&amp;id=54" target="_blank" rel="noopener">http://192.168.135.132/e/admin_style.asp?action=stylepreview&amp;id=54</a></p>
+</blockquote>
+<blockquote>
+<p>无确认按钮等情况-&gt;尝试添加样式-&gt;插入图片按钮-&gt;再次上传</p>
+</blockquote>
+<p><strong>编辑器版本原因：要用ie6.0 或者ietest访问</strong></p>
+<h2 id="fckeditor漏洞利用："><a href="#fckeditor漏洞利用：" class="headerlink" title="fckeditor漏洞利用："></a>fckeditor漏洞利用：</h2><p><strong>主要与解析漏洞结合</strong></p>
+<h3 id="操作步骤-1"><a href="#操作步骤-1" class="headerlink" title="操作步骤"></a>操作步骤</h3><blockquote>
+<p>图片找编辑器地址<br>图片组合漏洞地址<br>上传图片webshell<br>审查元素寻找webshell路径</p>
+</blockquote>
+<h3 id="高版本fckeditor存在过滤情况"><a href="#高版本fckeditor存在过滤情况" class="headerlink" title="高版本fckeditor存在过滤情况"></a>高版本fckeditor存在过滤情况</h3><p>上传文件时<code>.</code>变<code>_</code>，如<code>qq.asp;.jpg ==&gt; qq_asp;.jpg</code></p>
+<ul>
+<li>突破方法1：二次上传</li>
+</ul>
+<p>第一次上传：<code>qq.asp;.jpg</code> ==&gt; <code>qq_asp;.jpg</code><br>第二次上传：<code>qq.asp;.jpg</code> ==&gt; <code>qq.asp;(1).jpg</code></p>
+<ul>
+<li>突破方法2：修改数据包</li>
+</ul>
+<p><strong>利用解析漏洞中：文件夹解析图片webshell的思路</strong></p>
+<blockquote>
+<p>editor/filemanager/connectors/asp/connector.asp?Command=CreateFolder&amp;Type=Image&amp;CurrentFolder=/qing.asp&amp;NewFolderName=x.asp</p>
+</blockquote>
+<p>新建了<code>qing.asp</code>文件夹</p>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#FCKeditor" >
+    <span class="tag-code">FCKeditor</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/VMware虚拟机三种网络连接模式详解.html">
+        <span class="nav-arrow">← </span>
+        
+          VMware虚拟机三种网络连接模式详解
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/Python-character-string-align-center.html">
+        
+          Python字符串居中对齐
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+      <div class="money-like">
+        <div class="reward-btn">
+          赏
+          <span class="money-code">
+            <span class="alipay-code">
+              <div class="code-image"></div>
+              <b>使用支付宝打赏</b>
+            </span>
+            <span class="wechat-code">
+              <div class="code-image"></div>
+              <b>使用微信打赏</b>
+            </span>
+          </span>
+        </div>
+        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+      </div>
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+      <div class="qrcode">
+        <canvas id="share-qrcode"></canvas>
+        <p class="notice">扫描二维码，分享此文章</p>
+      </div>
+    
+    <!-- 二维码 END -->
+    
+      <!-- No Comment -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#编辑器漏洞分类："><span class="toc-nav-text">编辑器漏洞分类：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#ewebeditor漏洞利用："><span class="toc-nav-text">ewebeditor漏洞利用：</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认地址："><span class="toc-nav-text">默认地址：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认后台："><span class="toc-nav-text">默认后台：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认数据库"><span class="toc-nav-text">默认数据库:</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认用户密码："><span class="toc-nav-text">默认用户密码：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#操作步骤"><span class="toc-nav-text">操作步骤</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#fckeditor漏洞利用："><span class="toc-nav-text">fckeditor漏洞利用：</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#操作步骤-1"><span class="toc-nav-text">操作步骤</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#高版本fckeditor存在过滤情况"><span class="toc-nav-text">高版本fckeditor存在过滤情况</span></a></li></ol></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'https://storysec.github.io/编辑器漏洞基础笔记.html';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+  })();
+</script>
+
+
+  <script>
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+  </script>
+
+
+
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+<div align="center">
+    <table width="980" height="35" border="0" align="center">
+        <tr>
+            <td>
+            友情链接：&nbsp;&nbsp;
+            <a target="_blank" href="https://woj.app/">蜗居</a>
+			&nbsp;|&nbsp;
+            <a target="_blank" href="https://mrxn.net">Mrxn</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://hacktech.cn">Akkuman</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.bugsafe.cn">Poacher</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.se7ensec.cn">Se7en</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://www.ipz.me/">影乐</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.jiufox.com/">九尾狐</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://azfashao.com/">爱在发烧</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://www.web443.com/">Web443</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://deelmind.cn/">DeeLMind</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.moonsec.com/">暗月</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://xingqingsafe.github.io/">星晴</a>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<span>
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>|
+<span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+</span>
+  <p class="copyright">
+    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng/hexo-theme-vexo" target="_blank">yanm1ng</a>
+  </p>
+
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>

