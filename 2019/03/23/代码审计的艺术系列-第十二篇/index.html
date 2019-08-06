@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+  <head><meta name="generator" content="Hexo 3.9.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="referrer" content="no-referrer">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="关注网络安全">
+  <meta name="keyword" content="web安全 代码审计">
+  
+    <link rel="shortcut icon" href="/css/images/logo.png">
+  
+  <title>
+    
+      代码审计的艺术系列 第十二篇 | 影风博客
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/[object Object].min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+<link rel="stylesheet" href="/css/prism-story.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png">
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>影风博客</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">主页</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">归档</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">标签</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">关于</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">主页</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">归档</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">标签</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">关于</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>代码审计的艺术系列 第十二篇</h2>
+  <p class="post-date">2019-03-23</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><h2 id="0x00-背景"><a href="#0x00-背景" class="headerlink" title="0x00 背景"></a>0x00 背景</h2><p>最近国外漏洞披露平台<code>hackerone</code>上，一位白帽子发现<code>Uber</code>一修改任意账户密码的逻辑漏洞，获得了<code>$10000</code>美元的奖励。</p>
+<p>所以如何通过代码审计来挖掘逻辑漏洞是安全研究人员和开发人员必须熟悉的技能。本篇将主要讲解代码审计中的任意用户密码重置的安全问题。</p>
+<p>找回密码的原理：验证<code>auth</code>，在找回密码的时候生成一个<code>auth</code>，然后存储到数据库中，然后把找回密码的地址发到邮箱中<code>url</code>中就含有<code>auth</code>，由用户点开后就能修改密码。</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19o5izaq7j30qr0f7mzv.jpg" alt></p>
+<h2 id="0x01-rand函数生成auth"><a href="#0x01-rand函数生成auth" class="headerlink" title="0x01 rand函数生成auth"></a>0x01 rand函数生成auth</h2><p><code>Windows</code>环境下<code>rand()</code>最大值为<code>32768</code>，所以可被穷举，使用不当就会出现漏洞。之前出现过的漏洞代码如下:</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token delimiter">&lt;?php</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token variable">$resetpwd</span> <span class="token operator">=</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token function">rand</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$new</span><span class="token punctuation">[</span><span class="token string">'user'</span><span class="token punctuation">]</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">update</span><span class="token punctuation">(</span><span class="token string">'user'</span><span class="token punctuation">,</span><span class="token keyword">array</span><span class="token punctuation">(</span>
+<span class="token string">'email'</span><span class="token operator">=</span><span class="token operator">></span><span class="token variable">$email</span><span class="token punctuation">,</span>
+<span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token keyword">array</span><span class="token punctuation">(</span>
+<span class="token string">'resetpwd'</span><span class="token operator">=</span><span class="token operator">></span><span class="token variable">$resetpwd</span><span class="token punctuation">,</span>
+<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment" spellcheck="true">//发送邮件</span>
+<span class="token variable">$subject</span> <span class="token operator">=</span> <span class="token variable">$TS_SITE</span><span class="token punctuation">[</span><span class="token string">'base'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'site_title'</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token string">'会员密码找回'</span><span class="token punctuation">;</span>
+<span class="token variable">$content</span> <span class="token operator">=</span> <span class="token string">'您的登陆信息：&lt;br />Email：'</span><span class="token punctuation">.</span><span class="token variable">$email</span><span class="token punctuation">.</span>
+<span class="token string">'&lt;br />重设密码链接：&lt;br />&lt;a href="'</span><span class="token punctuation">.</span><span class="token variable">$TS_SITE</span><span class="token punctuation">[</span><span class="token string">'base'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'site_url'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>
+<span class="token string">'index.php?app=user&amp;ac=resetpwd&amp;mail='</span><span class="token punctuation">.</span><span class="token variable">$email</span><span class="token punctuation">.</span><span class="token string">'&amp;set='</span><span class="token punctuation">.</span><span class="token variable">$resetpwd</span><span class="token punctuation">.</span><span class="token string">'">'</span><span class="token punctuation">.</span><span class="token variable">$TS_SITE</span><span class="token punctuation">[</span><span class="token string">'base'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'site_url'</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token string">'index.php?app=user&amp;ac=resetpwd&amp;mail='</span><span class="token punctuation">.</span><span class="token variable">$email</span><span class="token punctuation">.</span><span class="token string">'&amp;set='</span><span class="token punctuation">.</span><span class="token variable">$resetpwd</span><span class="token punctuation">.</span><span class="token string">'&lt;/a>'</span><span class="token punctuation">;</span>
+<span class="token keyword">echo</span> <span class="token variable">$content</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>可以看到重置密码链接就两个参数，一个是邮箱另外一个就是<code>auth</code>，然而<code>auth</code>是使用了<code>rand()</code>函数生成的，所以我们可以写个脚本生成<code>1-32768</code>的<code>md5</code>值，然后使用<code>burp</code>来<code>Fuzz</code>就能重置任意用户密码了。</p>
+<p>生成<code>1-32768</code>的<code>md5</code>脚本如下：</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$a</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token variable">$a</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span><span class="token variable">$a</span><span class="token operator">&lt;=</span><span class="token number">32768</span><span class="token punctuation">;</span><span class="token variable">$a</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+<span class="token variable">$b</span> <span class="token operator">=</span> <span class="token function">md5</span><span class="token punctuation">(</span><span class="token operator">++</span><span class="token variable">$a</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">echo</span> <span class="token string">"\r\n"</span><span class="token punctuation">;</span>
+<span class="token keyword">echo</span> <span class="token variable">$b</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>之后我们以重置管理员<code>admin@admin.com</code>的密码为例，首先抓重置密码的包并设置好变量如下：</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19o5iwn3wj30j90393z4.jpg" alt></p>
+<p>然后爆破<code>resetpwd</code>这个<code>auth</code>字段，发现爆破成功！</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g19o5j1b1oj30is067go1.jpg" alt></p>
+<h2 id="0x02-auth过于简单可被猜解"><a href="#0x02-auth过于简单可被猜解" class="headerlink" title="0x02 auth过于简单可被猜解"></a>0x02 auth过于简单可被猜解</h2><p>跟与<code>rand</code>函数生成<code>auth</code>类似，这里讲另外一个<code>auth</code>生成的算法，算法中的<code>Key</code>没初始化导致的可被枚举，缺陷代码如下：</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token keyword">else</span><span class="token punctuation">{</span>
+<span class="token variable">$timetemp</span><span class="token operator">=</span><span class="token function">date</span><span class="token punctuation">(</span><span class="token string">"Y-m-d H:i:s"</span><span class="token punctuation">,</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">time</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$auth</span> <span class="token operator">=</span> util<span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token function">strcode</span><span class="token punctuation">(</span><span class="token variable">$timetemp</span><span class="token punctuation">,</span> <span class="token string">'ENCODE'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$verification</span><span class="token operator">=</span> <span class="token function">rand</span><span class="token punctuation">(</span><span class="token number">1000</span><span class="token punctuation">,</span><span class="token number">9999</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$encryptstring</span><span class="token operator">=</span><span class="token function">md5</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">time</span><span class="token punctuation">.</span><span class="token variable">$verification</span><span class="token punctuation">.</span><span class="token variable">$auth</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$reseturl</span><span class="token operator">=</span><span class="token constant">WIKI_URL</span><span class="token punctuation">.</span><span class="token string">"/index.php?user-getpass-"</span><span class="token punctuation">.</span><span class="token variable">$user</span><span class="token punctuation">[</span><span class="token string">'uid'</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token string">'-'</span><span class="token punctuation">.</span><span class="token variable">$encryptstring</span><span class="token punctuation">;</span>
+<span class="token variable">$_ENV</span><span class="token punctuation">[</span><span class="token string">'user'</span><span class="token punctuation">]</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">update_getpass</span><span class="token punctuation">(</span><span class="token variable">$user</span><span class="token punctuation">[</span><span class="token string">'uid'</span><span class="token punctuation">]</span><span class="token punctuation">,</span><span class="token variable">$encryptstring</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$mail_subject</span> <span class="token operator">=</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">setting</span><span class="token punctuation">[</span><span class="token string">'site_name'</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">view</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">lang</span><span class="token punctuation">[</span><span class="token string">'getPass'</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token variable">$mail_message</span> <span class="token operator">=</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">view</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">lang</span><span class="token punctuation">[</span><span class="token string">'resetPassMs1'</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token variable">$user</span><span class="token punctuation">[</span><span class="token string">'username'</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">view</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">lang</span><span class="token punctuation">[</span><span class="token string">'resetPassMs2'</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token variable">$timetemp</span><span class="token punctuation">.</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">view</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">lang</span><span class="token punctuation">[</span><span class="token string">'resetPassMs3'</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token string">"&lt;a href='"</span><span class="token punctuation">.</span><span class="token variable">$reseturl</span><span class="token punctuation">.</span>"<span class="token string">' target='</span>_blank<span class="token string">'>".$reseturl."&lt;/a>".$this->view->lang['</span>resetPassMs4<span class="token string">'].$this->setting['</span>site_name<span class="token string">'].$this->view->lang['</span>resetPassMs5<span class="token string">'].$this->setting['</span>site_name<span class="token string">'].$this->view->lang['</span>resetPassMs6'<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">load</span><span class="token punctuation">(</span><span class="token string">'mail'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$_ENV</span><span class="token punctuation">[</span><span class="token string">'mail'</span><span class="token punctuation">]</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">array</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token keyword">array</span><span class="token punctuation">(</span><span class="token variable">$email</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token variable">$mail_subject</span><span class="token punctuation">,</span> <span class="token variable">$mail_message</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token function">message</span><span class="token punctuation">(</span><span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">view</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">lang</span><span class="token punctuation">[</span><span class="token string">'emailSucess'</span><span class="token punctuation">]</span><span class="token punctuation">,</span><span class="token string">'index.php?user-login'</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>简单分析可知这里重置密码的<code>auth</code>是由</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token variable">$encryptstring</span><span class="token operator">=</span><span class="token function">md5</span><span class="token punctuation">(</span>​<span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">></span><span class="token property">time</span><span class="token punctuation">.</span><span class="token variable">$verification</span><span class="token punctuation">.</span>​<span class="token variable">$auth</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>这段代码生成的，而<code>$this-&gt;time</code>和​<code>$vertification=rand(1000,9999)</code>都是可控的变量（一个是当前时间的时间戳、一个是<code>1000-9999</code>随机的数值，这两个可以生成一个字典），所以关键点就是<code>$auth</code>，我们跟进<code>strcode</code>函数</p>
+<pre class="line-numbers language-php"><code class="language-php"><span class="token keyword">function</span> <span class="token function">strcode</span><span class="token punctuation">(</span><span class="token variable">$string</span><span class="token punctuation">,</span><span class="token variable">$action</span><span class="token operator">=</span><span class="token string">'ENCODE'</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+<span class="token variable">$key</span> <span class="token operator">=</span> <span class="token function">substr</span><span class="token punctuation">(</span><span class="token function">md5</span><span class="token punctuation">(</span><span class="token variable">$_SERVER</span><span class="token punctuation">[</span><span class="token string">"HTTP_USER_AGENT"</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token constant">PP_KEY</span><span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token number">18</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$string</span>    <span class="token operator">=</span> <span class="token variable">$action</span> <span class="token operator">==</span> <span class="token string">'ENCODE'</span> <span class="token operator">?</span> <span class="token variable">$string</span> <span class="token punctuation">:</span> <span class="token function">base64_decode</span><span class="token punctuation">(</span><span class="token variable">$string</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$len</span> <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$key</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token variable">$code</span> <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token variable">$i</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span> <span class="token variable">$i</span> <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span><span class="token variable">$string</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token variable">$i</span><span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+<span class="token variable">$k</span> <span class="token operator">=</span> <span class="token variable">$i</span> <span class="token operator">%</span> <span class="token variable">$len</span><span class="token punctuation">;</span>
+<span class="token variable">$code</span> <span class="token punctuation">.</span><span class="token operator">=</span> <span class="token variable">$string</span><span class="token punctuation">[</span><span class="token variable">$i</span><span class="token punctuation">]</span> <span class="token operator">^</span> <span class="token variable">$key</span><span class="token punctuation">[</span><span class="token variable">$k</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token variable">$code</span> <span class="token operator">=</span> <span class="token variable">$action</span> <span class="token operator">==</span> <span class="token string">'DECODE'</span> <span class="token operator">?</span> <span class="token variable">$code</span> <span class="token punctuation">:</span> <span class="token function">base64_encode</span><span class="token punctuation">(</span><span class="token variable">$code</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">return</span> <span class="token variable">$code</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>函数里有个<code>$key</code>是生成<code>$auth</code>的关键，而<code>$key</code>是对一个字符串进行了截取操作，里面<code>$_SERVER[&quot;HTTP_USER_AGENT&quot;]</code>是我们请求<code>header</code>里的<code>user_agent</code>变量，用户可控，后面有个<code>PP_KEY</code>居然没有初始化，至此<code>$key</code>也可控了即<code>$auth</code>可控，最终就可以构造找回密码链接来重置任意账户密码了。</p>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#代码审计" >
+    <span class="tag-code">代码审计</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2019/03/23/代码审计的艺术系列-第十一篇/">
+        <span class="nav-arrow">← </span>
+        
+          代码审计的艺术系列 第十一篇
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/2019/03/23/代码审计的艺术系列-第十三篇/">
+        
+          代码审计的艺术系列 第十三篇
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+      <div class="money-like">
+        <div class="reward-btn">
+          赏
+          <span class="money-code">
+            <span class="alipay-code">
+              <div class="code-image"></div>
+              <b>使用支付宝打赏</b>
+            </span>
+            <span class="wechat-code">
+              <div class="code-image"></div>
+              <b>使用微信打赏</b>
+            </span>
+          </span>
+        </div>
+        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+      </div>
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+      <div class="qrcode">
+        <canvas id="share-qrcode"></canvas>
+        <p class="notice">扫描二维码，分享此文章</p>
+      </div>
+    
+    <!-- 二维码 END -->
+    
+      <!-- No Comment -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x00-背景"><span class="toc-nav-text">0x00 背景</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x01-rand函数生成auth"><span class="toc-nav-text">0x01 rand函数生成auth</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x02-auth过于简单可被猜解"><span class="toc-nav-text">0x02 auth过于简单可被猜解</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'https://storysec.github.io/2019/03/23/代码审计的艺术系列-第十二篇/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+  })();
+</script>
+
+
+  <script>
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+  </script>
+
+
+
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+<div align="center">
+    <table width="980" height="35" border="0" align="center">
+        <tr>
+            <td>
+            友情链接：&nbsp;&nbsp;
+            <a target="_blank" href="https://woj.app/">蜗居</a>
+			&nbsp;|&nbsp;
+            <a target="_blank" href="https://mrxn.net">Mrxn</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://hacktech.cn">Akkuman</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.bugsafe.cn">Poacher</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.se7ensec.cn">Se7en</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://www.ipz.me/">影乐</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.jiufox.com/">九尾狐</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://azfashao.com/">爱在发烧</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://www.web443.com/">Web443</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://deelmind.cn/">DeeLMind</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="http://www.moonsec.com/">暗月</a>
+            &nbsp;|&nbsp;
+            <a target="_blank" href="https://xingqingsafe.github.io/">星晴</a>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<span>
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>|
+<span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+</span>
+  <p class="copyright">
+    &copy; 2019 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng/hexo-theme-vexo" target="_blank">yanm1ng</a>
+  </p>
+
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>
