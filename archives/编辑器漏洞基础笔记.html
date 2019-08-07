@@ -11,7 +11,7 @@
   
   <title>
     
-      代码审计的艺术系列 第七篇 | 影风博客
+      编辑器漏洞基础笔记 | 影风博客
     
   </title>
   <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -131,8 +131,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>代码审计的艺术系列 第七篇</h2>
-  <p class="post-date">2019-03-23</p>
+  <h2>编辑器漏洞基础笔记</h2>
+  <p class="post-date">2019-07-28</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -140,48 +140,61 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言:"></a>0x00 前言:</h2><p>接下来的几篇是对<code>PHP</code>代码审计中文件操作相关漏洞挖掘的总结。文件越权和上传漏洞在审计中非常常见，所以给你一套源码该如何去搜索这两类漏洞是这篇文章要讨论的。</p>
-<h2 id="0x01-越权访问的脑图"><a href="#0x01-越权访问的脑图" class="headerlink" title="0x01 越权访问的脑图"></a>0x01 越权访问的脑图</h2><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kijgzrwj30jd04kjro.jpg" alt></p>
-<h2 id="0x02-文件越权访问"><a href="#0x02-文件越权访问" class="headerlink" title="0x02 文件越权访问"></a>0x02 文件越权访问</h2><p><code>Tips</code>:</p>
-<p><code>PHP</code>中被引入的全局文件像<code>global.php</code>和<code>common.php</code>会对用户是否登录进行验证，如果未登录则跳转到登录页面，所以我们可以吧没有包含 <code>global.php</code>和<code>common.php</code>的<code>php</code>文件定义为可越权访问的文件。在<code>Linux</code>环境里可以使用<code>find</code>命令快速定为可越权的文件：</p>
-<p>1.在<code>etc</code>下查找没有包含<code>common.php</code>字符串的<code>php</code>文件</p>
-<pre class="line-numbers language-bash"><code class="language-bash"><span class="token function">find</span> /etc -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> -L <span class="token string">"common.php"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>2.在<code>etc</code>下查找所有包含<code>common.php</code>字符串的<code>php</code>文件</p>
-<pre class="line-numbers language-bash"><code class="language-bash"><span class="token function">find</span> /etc -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> <span class="token string">"common.php"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>案例：</p>
-<p>缺陷编号：<code>WooYun-2015-98084</code><br>漏洞标题：佑友<code>mailgard</code> <code>webmail</code>任意文件上传导致<code>getshell</code>（无需登录）<br>漏洞链接：<code>http://wooyun.org/bugs/wooyun-2010-098084</code></p>
-<p>简单分析下这个漏洞，没有包含根目录下<code>global.php</code>的文件，都不会跳转到登录界面即存在越权访问，所以查找可能存在越权访问的文件：</p>
-<pre class="line-numbers language-bash"><code class="language-bash">$ <span class="token function">find</span> -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> -L -E <span class="token string">"^require_once.+(\.\.\/global|[^/]global)\.php.+;$"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>结果如下：</p>
-<blockquote>
-<p>./overflow_alarm.php<br>./sms_send.php<br>./src/old.rule.php<br>./src/public_folders_upload.php<br>./src/big_attach.php<br>./src/big_att_upload.php<br>./src/read_data.php<br>./src/upload.php<br>./sync/linkman.php</p>
+    <section class="markdown-content"><p>常见编辑器：<code>ewebeditor</code>,<code>fckeditor</code>,<code>ckeditor</code>,<code>kindeditor</code>…</p>
+<h2 id="编辑器漏洞分类："><a href="#编辑器漏洞分类：" class="headerlink" title="编辑器漏洞分类："></a>编辑器漏洞分类：</h2><p><code>ewebeditor</code></p>
+<p><code>fckeditor</code><br>…</p>
+<p><strong>核心：编辑器地址</strong></p>
+<h2 id="ewebeditor漏洞利用："><a href="#ewebeditor漏洞利用：" class="headerlink" title="ewebeditor漏洞利用："></a>ewebeditor漏洞利用：</h2><h3 id="默认地址："><a href="#默认地址：" class="headerlink" title="默认地址："></a>默认地址：</h3><blockquote>
+<p><a href="http://www.xxx.com/ewebeditor" target="_blank" rel="noopener">www.xxx.com/ewebeditor</a><br><a href="http://www.xxx.com//admin/ewebeditor" target="_blank" rel="noopener">www.xxx.com//admin/ewebeditor</a><br><a href="http://www.xxx.com/admin/editor" target="_blank" rel="noopener">www.xxx.com/admin/editor</a></p>
 </blockquote>
-<p>然后就可以进一步去发现敏感信息泄露、注入和上传等漏洞了。</p>
-<h2 id="0x03-文件上传漏洞"><a href="#0x03-文件上传漏洞" class="headerlink" title="0x03 文件上传漏洞"></a>0x03 文件上传漏洞</h2><p>案例：</p>
-<p>以某厂商<code>http://www.xx00.com</code>的源码为例</p>
-<p>1.首先全局搜索<code>type=&quot;file&quot;</code>来判断有没有上传点(关键词<code>$_FILE</code>是查找上传文件逻辑处理的地方)：</p>
-<p>命令：</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjjv10xj30ic01c0sl.jpg" alt></p>
-<p>结果如下：</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjq3s8qj30k001vt9q.jpg" alt></p>
-<p>2.<code>xx00</code>也是用的<code>php</code>的框架，所以我们打开主页找<code>mvc</code>框架的影子：</p>
-<blockquote>
-<p><a href="http://www.xx00.com/at/gold_auction/auction_details/532" target="_blank" rel="noopener">http://www.xx00.com/at/gold_auction/auction_details/532</a><br><a href="http://www.xx00.com/at/index/baoming" target="_blank" rel="noopener">http://www.xx00.com/at/index/baoming</a></p>
+<h3 id="默认后台："><a href="#默认后台：" class="headerlink" title="默认后台："></a>默认后台：</h3><blockquote>
+<p>/ewebeditor/admin_login.asp<br>/ewebeditor/admin/login.asp</p>
 </blockquote>
-<p>根据上面两条和源码结构，判断功能函数在<code>/application/controller/at/</code>目录下</p>
-<p>并且判断出<code>http</code>的请求功能函数时应该遵循<code>domain/at/action/function/param</code>格式</p>
-<p>3.我们打开<code>/application/views/at/phone_test/display.php</code>，发现上传的<code>action=&quot;upload&quot;</code></p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjyvy9jj30k003mjse.jpg" alt></p>
-<p>4.打开<code>/application/controller/at/phone_test.php</code>，找到<code>upload</code>函数，分析代码可知有上传漏洞</p>
-<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kk7ilx3j30k00ay77k.jpg" alt></p>
+<h3 id="默认数据库"><a href="#默认数据库" class="headerlink" title="默认数据库:"></a>默认数据库:</h3><blockquote>
+<p>/ewebeditor/db/ewebeditor.mdb</p>
+</blockquote>
+<h3 id="默认用户密码："><a href="#默认用户密码：" class="headerlink" title="默认用户密码："></a>默认用户密码：</h3><blockquote>
+<p>admin admin888</p>
+</blockquote>
+<h3 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h3><blockquote>
+<p>找编辑器地址<br>找默认后台<br>尝试默认帐号密码登录<br>密码被修改尝试下载默认数据库-&gt;解密密码<br>登录后台<br>修改上传属性：添加上传类型(asaspp|asa|cer|asp;)<br>上传webshell</p>
+</blockquote>
+<p>实验：</p>
+<blockquote>
+<p><a href="http://192.168.135.132/e/admin_login.asp?action=login" target="_blank" rel="noopener">http://192.168.135.132/e/admin_login.asp?action=login</a></p>
+</blockquote>
+<blockquote>
+<p><a href="http://192.168.135.132/e/admin_style.asp?action=stylepreview&amp;id=54" target="_blank" rel="noopener">http://192.168.135.132/e/admin_style.asp?action=stylepreview&amp;id=54</a></p>
+</blockquote>
+<blockquote>
+<p>无确认按钮等情况-&gt;尝试添加样式-&gt;插入图片按钮-&gt;再次上传</p>
+</blockquote>
+<p><strong>编辑器版本原因：要用ie6.0 或者ietest访问</strong></p>
+<h2 id="fckeditor漏洞利用："><a href="#fckeditor漏洞利用：" class="headerlink" title="fckeditor漏洞利用："></a>fckeditor漏洞利用：</h2><p><strong>主要与解析漏洞结合</strong></p>
+<h3 id="操作步骤-1"><a href="#操作步骤-1" class="headerlink" title="操作步骤"></a>操作步骤</h3><blockquote>
+<p>图片找编辑器地址<br>图片组合漏洞地址<br>上传图片webshell<br>审查元素寻找webshell路径</p>
+</blockquote>
+<h3 id="高版本fckeditor存在过滤情况"><a href="#高版本fckeditor存在过滤情况" class="headerlink" title="高版本fckeditor存在过滤情况"></a>高版本fckeditor存在过滤情况</h3><p>上传文件时<code>.</code>变<code>_</code>，如<code>qq.asp;.jpg ==&gt; qq_asp;.jpg</code></p>
+<ul>
+<li>突破方法1：二次上传</li>
+</ul>
+<p>第一次上传：<code>qq.asp;.jpg</code> ==&gt; <code>qq_asp;.jpg</code><br>第二次上传：<code>qq.asp;.jpg</code> ==&gt; <code>qq.asp;(1).jpg</code></p>
+<ul>
+<li>突破方法2：修改数据包</li>
+</ul>
+<p><strong>利用解析漏洞中：文件夹解析图片webshell的思路</strong></p>
+<blockquote>
+<p>editor/filemanager/connectors/asp/connector.asp?Command=CreateFolder&amp;Type=Image&amp;CurrentFolder=/qing.asp&amp;NewFolderName=x.asp</p>
+</blockquote>
+<p>新建了<code>qing.asp</code>文件夹</p>
 </section>
     <!-- Tags START -->
     
       <div class="tags">
         <span>Tags:</span>
         
-  <a href="/tags#代码审计" >
-    <span class="tag-code">代码审计</span>
+  <a href="/tags#FCKeditor" >
+    <span class="tag-code">FCKeditor</span>
   </a>
 
       </div>
@@ -192,17 +205,17 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/代码审计的艺术系列-第六篇.html">
+      <a class="nav-left" href="/archives/VMware虚拟机三种网络连接模式详解.html">
         <span class="nav-arrow">← </span>
         
-          代码审计的艺术系列 第六篇
+          VMware虚拟机三种网络连接模式详解
         
       </a>
     
     
-      <a class="nav-right" href="/代码审计的艺术系列-第八篇.html">
+      <a class="nav-right" href="/archives/Python-character-string-align-center.html">
         
-          代码审计的艺术系列 第八篇
+          Python字符串居中对齐
         
         <span class="nav-arrow"> →</span>
       </a>
@@ -249,7 +262,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x00-前言"><span class="toc-nav-text">0x00 前言:</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x01-越权访问的脑图"><span class="toc-nav-text">0x01 越权访问的脑图</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x02-文件越权访问"><span class="toc-nav-text">0x02 文件越权访问</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x03-文件上传漏洞"><span class="toc-nav-text">0x03 文件上传漏洞</span></a></li></ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#编辑器漏洞分类："><span class="toc-nav-text">编辑器漏洞分类：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#ewebeditor漏洞利用："><span class="toc-nav-text">ewebeditor漏洞利用：</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认地址："><span class="toc-nav-text">默认地址：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认后台："><span class="toc-nav-text">默认后台：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认数据库"><span class="toc-nav-text">默认数据库:</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认用户密码："><span class="toc-nav-text">默认用户密码：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#操作步骤"><span class="toc-nav-text">操作步骤</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#fckeditor漏洞利用："><span class="toc-nav-text">fckeditor漏洞利用：</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#操作步骤-1"><span class="toc-nav-text">操作步骤</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#高版本fckeditor存在过滤情况"><span class="toc-nav-text">高版本fckeditor存在过滤情况</span></a></li></ol></li></ol>
     
   </div>
 </aside>
@@ -259,7 +272,7 @@
 
 <script>
   (function () {
-    var url = 'https://storysec.github.io/代码审计的艺术系列-第七篇.html';
+    var url = 'https://storysec.github.io/archives/编辑器漏洞基础笔记.html';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({

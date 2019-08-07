@@ -11,7 +11,7 @@
   
   <title>
     
-      Python字符串居中对齐 | 影风博客
+      重新开始，做回自己 | 影风博客
     
   </title>
   <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -131,8 +131,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>Python字符串居中对齐</h2>
-  <p class="post-date">2019-08-06</p>
+  <h2>重新开始，做回自己</h2>
+  <p class="post-date">2017-08-02</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -140,57 +140,22 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><pre class="line-numbers language-python"><code class="language-python"><span class="token comment" spellcheck="true">#encoding:utf-8</span>
-<span class="token comment" spellcheck="true">#python2.7</span>
-
-<span class="token keyword">import</span> sys
-<span class="token keyword">import</span> random
-reload<span class="token punctuation">(</span>sys<span class="token punctuation">)</span>
-sys<span class="token punctuation">.</span>setdefaultencoding<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span>
-
-
-<span class="token comment" spellcheck="true">#使用ljust()方法左对齐，括号里有两个参数:(字符串长度，用什么来填充)</span>
-<span class="token comment" spellcheck="true">#比如ljust(10,'-') 就是10个长度，剩余的地方用符号-来填充</span>
-
-data_text<span class="token operator">=</span><span class="token string">'test'</span>
-<span class="token keyword">print</span> data_text<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span><span class="token string">'-'</span><span class="token punctuation">)</span>
-<span class="token keyword">print</span> data_text<span class="token punctuation">.</span>rjust<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span><span class="token string">'-'</span><span class="token punctuation">)</span>
-<span class="token keyword">print</span> data_text<span class="token punctuation">.</span>center<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span><span class="token string">'-'</span><span class="token punctuation">)</span>
-
-<span class="token comment" spellcheck="true">#输出显示：</span>
-<span class="token comment" spellcheck="true">#test----------------</span>
-<span class="token comment" spellcheck="true">#----------------test</span>
-<span class="token comment" spellcheck="true">#--------test--------</span>
-
-
-li<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'A'</span><span class="token punctuation">,</span><span class="token string">'B'</span><span class="token punctuation">,</span><span class="token string">'C'</span><span class="token punctuation">,</span><span class="token string">'D'</span><span class="token punctuation">]</span>
-<span class="token keyword">for</span> x <span class="token keyword">in</span> li<span class="token punctuation">:</span>
-    <span class="token keyword">print</span> x<span class="token punctuation">.</span>center<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span><span class="token string">'-'</span><span class="token punctuation">)</span>
-
-<span class="token comment" spellcheck="true"># 输出显示</span>
-<span class="token comment" spellcheck="true">#---------A----------</span>
-<span class="token comment" spellcheck="true">#---------B----------</span>
-<span class="token comment" spellcheck="true">#---------C----------</span>
-<span class="token comment" spellcheck="true">#---------D----------</span>
-
-
-<span class="token comment" spellcheck="true">#使用format方法实现对齐，&lt;20左对齐20个长度，>右对齐，^居中对齐</span>
-<span class="token keyword">print</span> format<span class="token punctuation">(</span>data_text<span class="token punctuation">,</span><span class="token string">'&lt;20'</span><span class="token punctuation">)</span>
-
-<span class="token comment" spellcheck="true">#test</span>
-
-<span class="token comment" spellcheck="true">#一般来说用的最多的还是打印字典的时候，字典的键不一样，导致输出的结果不美观，使用此方法可以解决本问题。</span>
-
-data_dic<span class="token operator">=</span><span class="token punctuation">{</span>k<span class="token punctuation">:</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">20</span><span class="token punctuation">)</span> <span class="token keyword">for</span> k <span class="token keyword">in</span> <span class="token punctuation">(</span><span class="token string">'xiaotaohong'</span><span class="token punctuation">,</span><span class="token string">'chenyangqin'</span><span class="token punctuation">,</span><span class="token string">'zhaotiangeng'</span><span class="token punctuation">)</span><span class="token punctuation">}</span>
-<span class="token keyword">for</span> k<span class="token punctuation">,</span>v <span class="token keyword">in</span> data_dic<span class="token punctuation">.</span>iteritems<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
-    <span class="token keyword">print</span>  k<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">':'</span> <span class="token operator">+</span> str<span class="token punctuation">(</span>v<span class="token punctuation">)</span>
-
-<span class="token comment" spellcheck="true">#输出显示：</span>
-<span class="token comment" spellcheck="true">#xiaotaohong         :2</span>
-<span class="token comment" spellcheck="true">#zhaotiangeng        :16</span>
-<span class="token comment" spellcheck="true">#chenyangqin         :13</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    <section class="markdown-content"><p>小站一直生长在阿里云，前段时间老是被阿里云盯上，一言不合就封我URL，简直惨不忍睹。</p>
+<p>Blog道路上总是充满曲折的，成功贵在坚持，放弃等于失败。</p>
+<p>无论怎么样，blog还是要一直做下去，写写自己的技术笔记和经历，<br>或者人生感悟，更重要的是结交更多的朋友。</p>
+<p>之前的一段日子里，在忙一些杂乱无章的事，对网络有失兴趣，一点都不想触碰。<br>喝了一瓶82年的雪碧之后，冷静下来，认识到这路得重新走，重新找回那份兴趣和那份热情。</p>
+<p>Blog重做，期待新的自己在新的一年里学习更多的知识，结交更多的朋友！</p>
 </section>
     <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#博客生涯" >
+    <span class="tag-code">博客生涯</span>
+  </a>
+
+      </div>
     
     <!-- Tags END -->
     <!-- NAV START -->
@@ -198,13 +163,13 @@ data_dic<span class="token operator">=</span><span class="token punctuation">{</
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/编辑器漏洞基础笔记.html">
-        <span class="nav-arrow">← </span>
-        
-          编辑器漏洞基础笔记
-        
-      </a>
     
+      <a class="nav-right" href="/archives/使用C和C++实现复数抽象数据类型Complex.html">
+        
+          使用CC++实现复数抽象数据类型Complex
+        
+        <span class="nav-arrow"> →</span>
+      </a>
     
   </div>
 
@@ -258,7 +223,7 @@ data_dic<span class="token operator">=</span><span class="token punctuation">{</
 
 <script>
   (function () {
-    var url = 'https://storysec.github.io/Python-character-string-align-center.html';
+    var url = 'https://storysec.github.io/archives/重新开始，做回自己.html';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({

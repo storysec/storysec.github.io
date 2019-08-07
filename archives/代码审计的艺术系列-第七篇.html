@@ -11,7 +11,7 @@
   
   <title>
     
-      重新开始，做回自己 | 影风博客
+      代码审计的艺术系列 第七篇 | 影风博客
     
   </title>
   <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -131,8 +131,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>重新开始，做回自己</h2>
-  <p class="post-date">2017-08-02</p>
+  <h2>代码审计的艺术系列 第七篇</h2>
+  <p class="post-date">2019-03-23</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -140,19 +140,48 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><p>小站一直生长在阿里云，前段时间老是被阿里云盯上，一言不合就封我URL，简直惨不忍睹。</p>
-<p>Blog道路上总是充满曲折的，成功贵在坚持，放弃等于失败。</p>
-<p>无论怎么样，blog还是要一直做下去，写写自己的技术笔记和经历，<br>或者人生感悟，更重要的是结交更多的朋友。</p>
-<p>之前的一段日子里，在忙一些杂乱无章的事，对网络有失兴趣，一点都不想触碰。<br>喝了一瓶82年的雪碧之后，冷静下来，认识到这路得重新走，重新找回那份兴趣和那份热情。</p>
-<p>Blog重做，期待新的自己在新的一年里学习更多的知识，结交更多的朋友！</p>
+    <section class="markdown-content"><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言:"></a>0x00 前言:</h2><p>接下来的几篇是对<code>PHP</code>代码审计中文件操作相关漏洞挖掘的总结。文件越权和上传漏洞在审计中非常常见，所以给你一套源码该如何去搜索这两类漏洞是这篇文章要讨论的。</p>
+<h2 id="0x01-越权访问的脑图"><a href="#0x01-越权访问的脑图" class="headerlink" title="0x01 越权访问的脑图"></a>0x01 越权访问的脑图</h2><p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kijgzrwj30jd04kjro.jpg" alt></p>
+<h2 id="0x02-文件越权访问"><a href="#0x02-文件越权访问" class="headerlink" title="0x02 文件越权访问"></a>0x02 文件越权访问</h2><p><code>Tips</code>:</p>
+<p><code>PHP</code>中被引入的全局文件像<code>global.php</code>和<code>common.php</code>会对用户是否登录进行验证，如果未登录则跳转到登录页面，所以我们可以吧没有包含 <code>global.php</code>和<code>common.php</code>的<code>php</code>文件定义为可越权访问的文件。在<code>Linux</code>环境里可以使用<code>find</code>命令快速定为可越权的文件：</p>
+<p>1.在<code>etc</code>下查找没有包含<code>common.php</code>字符串的<code>php</code>文件</p>
+<pre class="line-numbers language-bash"><code class="language-bash"><span class="token function">find</span> /etc -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> -L <span class="token string">"common.php"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>2.在<code>etc</code>下查找所有包含<code>common.php</code>字符串的<code>php</code>文件</p>
+<pre class="line-numbers language-bash"><code class="language-bash"><span class="token function">find</span> /etc -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> <span class="token string">"common.php"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>案例：</p>
+<p>缺陷编号：<code>WooYun-2015-98084</code><br>漏洞标题：佑友<code>mailgard</code> <code>webmail</code>任意文件上传导致<code>getshell</code>（无需登录）<br>漏洞链接：<code>http://wooyun.org/bugs/wooyun-2010-098084</code></p>
+<p>简单分析下这个漏洞，没有包含根目录下<code>global.php</code>的文件，都不会跳转到登录界面即存在越权访问，所以查找可能存在越权访问的文件：</p>
+<pre class="line-numbers language-bash"><code class="language-bash">$ <span class="token function">find</span> -name <span class="token string">"*.php"</span> <span class="token operator">|</span> <span class="token function">xargs</span> <span class="token function">grep</span> -L -E <span class="token string">"^require_once.+(\.\.\/global|[^/]global)\.php.+;$"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>结果如下：</p>
+<blockquote>
+<p>./overflow_alarm.php<br>./sms_send.php<br>./src/old.rule.php<br>./src/public_folders_upload.php<br>./src/big_attach.php<br>./src/big_att_upload.php<br>./src/read_data.php<br>./src/upload.php<br>./sync/linkman.php</p>
+</blockquote>
+<p>然后就可以进一步去发现敏感信息泄露、注入和上传等漏洞了。</p>
+<h2 id="0x03-文件上传漏洞"><a href="#0x03-文件上传漏洞" class="headerlink" title="0x03 文件上传漏洞"></a>0x03 文件上传漏洞</h2><p>案例：</p>
+<p>以某厂商<code>http://www.xx00.com</code>的源码为例</p>
+<p>1.首先全局搜索<code>type=&quot;file&quot;</code>来判断有没有上传点(关键词<code>$_FILE</code>是查找上传文件逻辑处理的地方)：</p>
+<p>命令：</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjjv10xj30ic01c0sl.jpg" alt></p>
+<p>结果如下：</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjq3s8qj30k001vt9q.jpg" alt></p>
+<p>2.<code>xx00</code>也是用的<code>php</code>的框架，所以我们打开主页找<code>mvc</code>框架的影子：</p>
+<blockquote>
+<p><a href="http://www.xx00.com/at/gold_auction/auction_details/532" target="_blank" rel="noopener">http://www.xx00.com/at/gold_auction/auction_details/532</a><br><a href="http://www.xx00.com/at/index/baoming" target="_blank" rel="noopener">http://www.xx00.com/at/index/baoming</a></p>
+</blockquote>
+<p>根据上面两条和源码结构，判断功能函数在<code>/application/controller/at/</code>目录下</p>
+<p>并且判断出<code>http</code>的请求功能函数时应该遵循<code>domain/at/action/function/param</code>格式</p>
+<p>3.我们打开<code>/application/views/at/phone_test/display.php</code>，发现上传的<code>action=&quot;upload&quot;</code></p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kjyvy9jj30k003mjse.jpg" alt></p>
+<p>4.打开<code>/application/controller/at/phone_test.php</code>，找到<code>upload</code>函数，分析代码可知有上传漏洞</p>
+<p><img src="https://ww1.sinaimg.cn/large/006Fzy5igy1g18kk7ilx3j30k00ay77k.jpg" alt></p>
 </section>
     <!-- Tags START -->
     
       <div class="tags">
         <span>Tags:</span>
         
-  <a href="/tags#博客生涯" >
-    <span class="tag-code">博客生涯</span>
+  <a href="/tags#代码审计" >
+    <span class="tag-code">代码审计</span>
   </a>
 
       </div>
@@ -163,10 +192,17 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-    
-      <a class="nav-right" href="/使用C和C++实现复数抽象数据类型Complex.html">
+      <a class="nav-left" href="/archives/代码审计的艺术系列-第六篇.html">
+        <span class="nav-arrow">← </span>
         
-          使用CC++实现复数抽象数据类型Complex
+          代码审计的艺术系列 第六篇
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/archives/代码审计的艺术系列-第八篇.html">
+        
+          代码审计的艺术系列 第八篇
         
         <span class="nav-arrow"> →</span>
       </a>
@@ -213,7 +249,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="nav">none</ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x00-前言"><span class="toc-nav-text">0x00 前言:</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x01-越权访问的脑图"><span class="toc-nav-text">0x01 越权访问的脑图</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x02-文件越权访问"><span class="toc-nav-text">0x02 文件越权访问</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0x03-文件上传漏洞"><span class="toc-nav-text">0x03 文件上传漏洞</span></a></li></ol>
     
   </div>
 </aside>
@@ -223,7 +259,7 @@
 
 <script>
   (function () {
-    var url = 'https://storysec.github.io/重新开始，做回自己.html';
+    var url = 'https://storysec.github.io/archives/代码审计的艺术系列-第七篇.html';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({

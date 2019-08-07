@@ -11,7 +11,7 @@
   
   <title>
     
-      编辑器漏洞基础笔记 | 影风博客
+      Python字符串居中对齐 | 影风博客
     
   </title>
   <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -131,8 +131,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>编辑器漏洞基础笔记</h2>
-  <p class="post-date">2019-07-28</p>
+  <h2>Python字符串居中对齐</h2>
+  <p class="post-date">2019-08-06</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -140,64 +140,57 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><p>常见编辑器：<code>ewebeditor</code>,<code>fckeditor</code>,<code>ckeditor</code>,<code>kindeditor</code>…</p>
-<h2 id="编辑器漏洞分类："><a href="#编辑器漏洞分类：" class="headerlink" title="编辑器漏洞分类："></a>编辑器漏洞分类：</h2><p><code>ewebeditor</code></p>
-<p><code>fckeditor</code><br>…</p>
-<p><strong>核心：编辑器地址</strong></p>
-<h2 id="ewebeditor漏洞利用："><a href="#ewebeditor漏洞利用：" class="headerlink" title="ewebeditor漏洞利用："></a>ewebeditor漏洞利用：</h2><h3 id="默认地址："><a href="#默认地址：" class="headerlink" title="默认地址："></a>默认地址：</h3><blockquote>
-<p><a href="http://www.xxx.com/ewebeditor" target="_blank" rel="noopener">www.xxx.com/ewebeditor</a><br><a href="http://www.xxx.com//admin/ewebeditor" target="_blank" rel="noopener">www.xxx.com//admin/ewebeditor</a><br><a href="http://www.xxx.com/admin/editor" target="_blank" rel="noopener">www.xxx.com/admin/editor</a></p>
-</blockquote>
-<h3 id="默认后台："><a href="#默认后台：" class="headerlink" title="默认后台："></a>默认后台：</h3><blockquote>
-<p>/ewebeditor/admin_login.asp<br>/ewebeditor/admin/login.asp</p>
-</blockquote>
-<h3 id="默认数据库"><a href="#默认数据库" class="headerlink" title="默认数据库:"></a>默认数据库:</h3><blockquote>
-<p>/ewebeditor/db/ewebeditor.mdb</p>
-</blockquote>
-<h3 id="默认用户密码："><a href="#默认用户密码：" class="headerlink" title="默认用户密码："></a>默认用户密码：</h3><blockquote>
-<p>admin admin888</p>
-</blockquote>
-<h3 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h3><blockquote>
-<p>找编辑器地址<br>找默认后台<br>尝试默认帐号密码登录<br>密码被修改尝试下载默认数据库-&gt;解密密码<br>登录后台<br>修改上传属性：添加上传类型(asaspp|asa|cer|asp;)<br>上传webshell</p>
-</blockquote>
-<p>实验：</p>
-<blockquote>
-<p><a href="http://192.168.135.132/e/admin_login.asp?action=login" target="_blank" rel="noopener">http://192.168.135.132/e/admin_login.asp?action=login</a></p>
-</blockquote>
-<blockquote>
-<p><a href="http://192.168.135.132/e/admin_style.asp?action=stylepreview&amp;id=54" target="_blank" rel="noopener">http://192.168.135.132/e/admin_style.asp?action=stylepreview&amp;id=54</a></p>
-</blockquote>
-<blockquote>
-<p>无确认按钮等情况-&gt;尝试添加样式-&gt;插入图片按钮-&gt;再次上传</p>
-</blockquote>
-<p><strong>编辑器版本原因：要用ie6.0 或者ietest访问</strong></p>
-<h2 id="fckeditor漏洞利用："><a href="#fckeditor漏洞利用：" class="headerlink" title="fckeditor漏洞利用："></a>fckeditor漏洞利用：</h2><p><strong>主要与解析漏洞结合</strong></p>
-<h3 id="操作步骤-1"><a href="#操作步骤-1" class="headerlink" title="操作步骤"></a>操作步骤</h3><blockquote>
-<p>图片找编辑器地址<br>图片组合漏洞地址<br>上传图片webshell<br>审查元素寻找webshell路径</p>
-</blockquote>
-<h3 id="高版本fckeditor存在过滤情况"><a href="#高版本fckeditor存在过滤情况" class="headerlink" title="高版本fckeditor存在过滤情况"></a>高版本fckeditor存在过滤情况</h3><p>上传文件时<code>.</code>变<code>_</code>，如<code>qq.asp;.jpg ==&gt; qq_asp;.jpg</code></p>
-<ul>
-<li>突破方法1：二次上传</li>
-</ul>
-<p>第一次上传：<code>qq.asp;.jpg</code> ==&gt; <code>qq_asp;.jpg</code><br>第二次上传：<code>qq.asp;.jpg</code> ==&gt; <code>qq.asp;(1).jpg</code></p>
-<ul>
-<li>突破方法2：修改数据包</li>
-</ul>
-<p><strong>利用解析漏洞中：文件夹解析图片webshell的思路</strong></p>
-<blockquote>
-<p>editor/filemanager/connectors/asp/connector.asp?Command=CreateFolder&amp;Type=Image&amp;CurrentFolder=/qing.asp&amp;NewFolderName=x.asp</p>
-</blockquote>
-<p>新建了<code>qing.asp</code>文件夹</p>
+    <section class="markdown-content"><pre class="line-numbers language-python"><code class="language-python"><span class="token comment" spellcheck="true">#encoding:utf-8</span>
+<span class="token comment" spellcheck="true">#python2.7</span>
+
+<span class="token keyword">import</span> sys
+<span class="token keyword">import</span> random
+reload<span class="token punctuation">(</span>sys<span class="token punctuation">)</span>
+sys<span class="token punctuation">.</span>setdefaultencoding<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span>
+
+
+<span class="token comment" spellcheck="true">#使用ljust()方法左对齐，括号里有两个参数:(字符串长度，用什么来填充)</span>
+<span class="token comment" spellcheck="true">#比如ljust(10,'-') 就是10个长度，剩余的地方用符号-来填充</span>
+
+data_text<span class="token operator">=</span><span class="token string">'test'</span>
+<span class="token keyword">print</span> data_text<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span><span class="token string">'-'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span> data_text<span class="token punctuation">.</span>rjust<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span><span class="token string">'-'</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span> data_text<span class="token punctuation">.</span>center<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span><span class="token string">'-'</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">#输出显示：</span>
+<span class="token comment" spellcheck="true">#test----------------</span>
+<span class="token comment" spellcheck="true">#----------------test</span>
+<span class="token comment" spellcheck="true">#--------test--------</span>
+
+
+li<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'A'</span><span class="token punctuation">,</span><span class="token string">'B'</span><span class="token punctuation">,</span><span class="token string">'C'</span><span class="token punctuation">,</span><span class="token string">'D'</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> x <span class="token keyword">in</span> li<span class="token punctuation">:</span>
+    <span class="token keyword">print</span> x<span class="token punctuation">.</span>center<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span><span class="token string">'-'</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true"># 输出显示</span>
+<span class="token comment" spellcheck="true">#---------A----------</span>
+<span class="token comment" spellcheck="true">#---------B----------</span>
+<span class="token comment" spellcheck="true">#---------C----------</span>
+<span class="token comment" spellcheck="true">#---------D----------</span>
+
+
+<span class="token comment" spellcheck="true">#使用format方法实现对齐，&lt;20左对齐20个长度，>右对齐，^居中对齐</span>
+<span class="token keyword">print</span> format<span class="token punctuation">(</span>data_text<span class="token punctuation">,</span><span class="token string">'&lt;20'</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">#test</span>
+
+<span class="token comment" spellcheck="true">#一般来说用的最多的还是打印字典的时候，字典的键不一样，导致输出的结果不美观，使用此方法可以解决本问题。</span>
+
+data_dic<span class="token operator">=</span><span class="token punctuation">{</span>k<span class="token punctuation">:</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">20</span><span class="token punctuation">)</span> <span class="token keyword">for</span> k <span class="token keyword">in</span> <span class="token punctuation">(</span><span class="token string">'xiaotaohong'</span><span class="token punctuation">,</span><span class="token string">'chenyangqin'</span><span class="token punctuation">,</span><span class="token string">'zhaotiangeng'</span><span class="token punctuation">)</span><span class="token punctuation">}</span>
+<span class="token keyword">for</span> k<span class="token punctuation">,</span>v <span class="token keyword">in</span> data_dic<span class="token punctuation">.</span>iteritems<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span>  k<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">':'</span> <span class="token operator">+</span> str<span class="token punctuation">(</span>v<span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">#输出显示：</span>
+<span class="token comment" spellcheck="true">#xiaotaohong         :2</span>
+<span class="token comment" spellcheck="true">#zhaotiangeng        :16</span>
+<span class="token comment" spellcheck="true">#chenyangqin         :13</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 </section>
     <!-- Tags START -->
-    
-      <div class="tags">
-        <span>Tags:</span>
-        
-  <a href="/tags#FCKeditor" >
-    <span class="tag-code">FCKeditor</span>
-  </a>
-
-      </div>
     
     <!-- Tags END -->
     <!-- NAV START -->
@@ -205,20 +198,13 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/VMware虚拟机三种网络连接模式详解.html">
+      <a class="nav-left" href="/archives/编辑器漏洞基础笔记.html">
         <span class="nav-arrow">← </span>
         
-          VMware虚拟机三种网络连接模式详解
+          编辑器漏洞基础笔记
         
       </a>
     
-    
-      <a class="nav-right" href="/Python-character-string-align-center.html">
-        
-          Python字符串居中对齐
-        
-        <span class="nav-arrow"> →</span>
-      </a>
     
   </div>
 
@@ -262,7 +248,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#编辑器漏洞分类："><span class="toc-nav-text">编辑器漏洞分类：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#ewebeditor漏洞利用："><span class="toc-nav-text">ewebeditor漏洞利用：</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认地址："><span class="toc-nav-text">默认地址：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认后台："><span class="toc-nav-text">默认后台：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认数据库"><span class="toc-nav-text">默认数据库:</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#默认用户密码："><span class="toc-nav-text">默认用户密码：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#操作步骤"><span class="toc-nav-text">操作步骤</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#fckeditor漏洞利用："><span class="toc-nav-text">fckeditor漏洞利用：</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#操作步骤-1"><span class="toc-nav-text">操作步骤</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#高版本fckeditor存在过滤情况"><span class="toc-nav-text">高版本fckeditor存在过滤情况</span></a></li></ol></li></ol>
+      <ol class="nav">none</ol>
     
   </div>
 </aside>
@@ -272,7 +258,7 @@
 
 <script>
   (function () {
-    var url = 'https://storysec.github.io/编辑器漏洞基础笔记.html';
+    var url = 'https://storysec.github.io/archives/Python-character-string-align-center.html';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({
